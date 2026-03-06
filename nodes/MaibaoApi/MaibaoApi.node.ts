@@ -166,18 +166,18 @@ async function extractImagesFromBinary(
 	return images;
 }
 
-export class DeerApi implements INodeType {
+export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'DeerAPI',
-		name: 'deerApi',
-		icon: 'file:deerapi.png',
+		displayName: 'MaibaoAPI',
+		name: 'maibaoApi',
+		icon: 'file:maibaoapi.png',
 		group: ['transform'],
 		version: 1,
-		description: '调用 DeerAPI 进行文字、图像、Sora 2 视频生成及向量嵌入',
-		defaults: { name: 'DeerAPI' },
+		description: '调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入',
+		defaults: { name: 'MaibaoAPI' },
 		inputs: ['main'],
 		outputs: ['main'],
-		credentials: [{ name: 'deerApi', required: true }],
+		credentials: [{ name: 'maibaoApi', required: true }],
 		properties: [
 			{
 				displayName: '模式',
@@ -212,11 +212,11 @@ export class DeerApi implements INodeType {
 				type: 'options',
 				displayOptions: { show: { mode: ['image'] } },
 				options: [
-					{ name: 'Gemini-3-Pro-Image', value: 'gemini-3-pro-image' },
-					{ name: 'Gemini-2.5-Flash-Image', value: 'gemini-2.5-flash-image' },
-					{ name: '即梦 4.5', value: 'doubao-seedream-4-5-251128' },
+					{ name: 'Gemini-3.1-Flash-Image', value: 'gemini-3.1-flash-image-preview' },
+					{ name: 'Gemini-3-Pro-Image', value: 'gemini-3-pro-image-preview' },
+					{ name: '即梦 5.0', value: 'doubao-seedream-5-0-260128' },
 				],
-				default: 'gemini-3-pro-image',
+				default: 'gemini-3.1-flash-image-preview',
 			},
 			{
 				displayName: '生成模型',
@@ -234,7 +234,7 @@ export class DeerApi implements INodeType {
 				name: 'modelId',
 				type: 'string',
 				displayOptions: { show: { mode: ['text'] } },
-				default: 'gemini-3-pro-preview',
+				default: 'gemini-3.1-pro-preview',
 				required: true,
 			},
 			{
@@ -349,21 +349,37 @@ export class DeerApi implements INodeType {
 				displayName: '分辨率',
 				name: 'imageSize',
 				type: 'options',
-				displayOptions: { show: { mode: ['image'], imageModel: ['doubao-seedream-4-5-251128'] } },
-				options: [{ name: '2K', value: '2K' }, { name: '4K', value: '4K' }],
-				default: '2K',
+				displayOptions: { show: { mode: ['image'], imageModel: ['doubao-seedream-5-0-260128'] } },
+				options: [{ name: '2K', value: '2k' }, { name: '3K', value: '3k' }],
+				default: '2k',
 			},
 			{
 				displayName: '尺寸比例',
 				name: 'aspectRatio',
 				type: 'options',
-				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3-pro-image', 'gemini-2.5-flash-image'] } },
+				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3-pro-image-preview'] } },
 				options: [
 					{ name: '1:1', value: '1:1' }, { name: '3:2', value: '3:2' },
 					{ name: '2:3', value: '2:3' }, { name: '16:9', value: '16:9' },
 					{ name: '9:16', value: '9:16' }, { name: '3:4', value: '3:4' },
 					{ name: '4:3', value: '4:3' }, { name: '4:5', value: '4:5' },
-					{ name: '5:4', value: '5:4' }, { name: '21:9', value: '21:9' },
+					{ name: '5:4', value: '5:4' },
+				],
+				default: '1:1',
+			},
+			{
+				displayName: '尺寸比例',
+				name: 'aspectRatio',
+				type: 'options',
+				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3.1-flash-image-preview'] } },
+				options: [
+					{ name: '1:1', value: '1:1' }, { name: '3:2', value: '3:2' },
+					{ name: '2:3', value: '2:3' }, { name: '16:9', value: '16:9' },
+					{ name: '9:16', value: '9:16' }, { name: '3:4', value: '3:4' },
+					{ name: '4:3', value: '4:3' }, { name: '4:5', value: '4:5' },
+					{ name: '5:4', value: '5:4' }, { name: '1:4', value: '1:4' },
+					{ name: '4:1', value: '4:1' }, { name: '1:8', value: '1:8' },
+					{ name: '8:1', value: '8:1' },
 				],
 				default: '1:1',
 			},
@@ -437,12 +453,13 @@ export class DeerApi implements INodeType {
 				description: '用于文字识别、图像参考、及视频创建的参考图',
 			},
 		],
+		usableAsTool: true,
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
-		const credentials = await this.getCredentials('deerApi');
+		const credentials = await this.getCredentials('maibaoApi');
 		const mode = this.getNodeParameter('mode', 0) as string;
 		const rawBaseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
 		const soraBaseUrl = rawBaseUrl.replace(/\/v1$/, '');
@@ -503,7 +520,7 @@ export class DeerApi implements INodeType {
 					// 收集 Binary 数据
 					const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
 
-					if (imageModel === 'gemini-3-pro-image' || imageModel === 'gemini-2.5-flash-image') {
+					if (imageModel === 'gemini-3-pro-image-preview' || imageModel === 'gemini-3.1-flash-image-preview') {
 						const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
 						const parts: any[] = [{ text: userPrompt }];
 
@@ -519,7 +536,7 @@ export class DeerApi implements INodeType {
 							responseModalities: ["IMAGE"],
 						};
 						// 只有 gemini-3-pro-image 需要 imageSize 参数
-						if (imageModel === 'gemini-3-pro-image') {
+						if (imageModel === 'gemini-3-pro-image-preview') {
 							const rawSize = this.getNodeParameter('imageSize', i) as string;
 							generationConfig.imageSize = rawSize;
 						}
@@ -533,7 +550,7 @@ export class DeerApi implements INodeType {
 						});
 						const b64 = res.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData.data;
 						if (b64) {
-							const outputFileName = imageModel === 'gemini-2.5-flash-image' ? 'gemini_flash_image.png' : 'gemini_image.png';
+							const outputFileName = imageModel === 'gemini-3.1-flash-image-preview' ? 'gemini_flash_image.png' : 'gemini_image.png';
 							const binaryOutput = await this.helpers.prepareBinaryData(Buffer.from(b64, 'base64'), outputFileName, 'image/png');
 							returnData.push({ json: { status: 'success' }, binary: { data: binaryOutput } });
 						} else throw new Error(`Gemini 接口未返回图像。`);

@@ -1,76 +1,37 @@
 # Changelog
 
-## [1.5.7] - 2026-02-04
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2024-03-06
 
 ### Added
-
-- **图像生成新增模型**：支持 `Gemini-2.5-Flash-Image` 模型
-  - 调用方式与 Gemini-3-Pro-Image 一致
-  - 支持尺寸比例参数
-  - 无需分辨率参数配置（相比 Gemini-3-Pro-Image）
-
-## [1.5.6] - 2026-02-04
-
-### Added
-
-- **跨节点 Binary 读取功能**：新增"Binary 来源模式"参数
-  - 当前节点输入：默认模式，保持现有行为
-  - 指定节点：按用户指定的节点名称列表读取（精确匹配）
-- 新增"指定节点名称"参数，支持逗号分隔多个节点名
-- Binary 数据自动合并，属性名遵循 data, data0, data1... 命名规则
-- 找不到节点或无 Binary 数据时静默忽略
-
-### Note
-
-- 此功能适用于文字生成、图像生成、视频生成-创建模式
-- 向后兼容：默认模式与现有版本行为一致
-
-## [1.5.5] - 2026-02-03
-
-### Reverted
-
-- **回退跨节点 Binary 读取功能**：由于技术限制，该功能无法在自定义节点中可靠实现
-- 移除 `binarySourceMode` 和 `sourceNodeNames` 参数
-- 恢复为仅从当前节点输入读取 Binary 图片数据
-- 代码结构简化，提高稳定性
-
-### Note
-
-- 如需跨节点读取 Binary 文件，请在 DeerAPI 节点前使用 Code 节点手动传递 Binary 数据
-
-## [1.4.0] - 2025-01-13
-
-### Added
-
-- 新增向量嵌入 (Embeddings) 模式
-- 支持 `text-embedding-3-large` 和 `text-embedding-3-small` 模型
-
-## [1.3.0]
-
-### Added
-
-- 新增视频生成模式 (Sora 2)
-- 支持创建、混编、检索、下载、列出视频操作
-- 故事板模式支持分镜头描述
-- 智能轮询等待功能
-
-## [1.2.0]
-
-### Added
-
-- 图像生成支持即梦 4.5 模型
-
-## [1.1.0]
-
-### Added
-
-- 图像生成模式
-- 支持 Gemini-3-Pro-Image 模型
-
-## [1.0.0]
-
-### Added
-
-- 初始版本
+- 初始版本发布
 - 文字生成模式
-- 支持多模态（文字 + 图片）输入
+  - 支持文字 + 图片的多模态输入
+  - 默认模型: `gemini-3.1-pro-preview`
+  - 自动处理 Binary 图片数据（最多 3 张）
+  - 支持文档附件自动提取
+- 图像生成模式
+  - Gemini-3.1-Flash-Image 模型（支持 13 种尺寸比例）
+  - Gemini-3-Pro-Image 模型（支持 9 种尺寸比例，1K/2K/4K 分辨率）
+  - 即梦 5.0 模型（支持 2K/3K 分辨率）
+  - 支持文生图和图生图
+- 视频生成模式（Sora 2）
+  - 创建视频、混编视频、检索视频、下载视频、历史列表
+  - 故事板模式支持分镜控制
+  - 智能轮询等待机制
+- 向量嵌入模式（Embeddings）
+  - 支持 text-embedding-3-large 和 text-embedding-3-small
+- 跨节点 Binary 读取功能
+- API 端点: `https://api.maibao.chat/v1`
+
+### Technical
+- 基于 n8n-workflow 框架
+- TypeScript 实现
+- 完整的类型定义
+- 自动 Base64 转换
+
+[1.0.0]: https://github.com/maosonghuai/n8n-nodes-maibaoapi/releases/tag/v1.0.0

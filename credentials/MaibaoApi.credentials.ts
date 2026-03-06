@@ -1,9 +1,9 @@
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class DeerApi implements ICredentialType {
-	name = 'deerApi';
-	displayName = 'DeerAPI';
-	documentationUrl = 'https://apidoc.deerapi.com/';
+export class MaibaoApi implements ICredentialType {
+	name = 'maibaoApi';
+	displayName = 'MaibaoAPI API';
+	documentationUrl = 'https://maibaoapi.apifox.cn/';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
@@ -17,8 +17,8 @@ export class DeerApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'baseUrl',
 			type: 'string',
-			default: 'https://api.deerapi.com/v1',
-			placeholder: 'https://api.deerapi.com/v1',
+			default: 'https://api.maibao.chat/v1',
+			placeholder: 'https://api.maibao.chat/v1',
 			required: true,
 		},
 	];

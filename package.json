@@ -1,7 +1,7 @@
 {
-	"name": "n8n-nodes-deerapi",
-	"version": "1.5.9",
-	"description": "便捷调用 DeerAPI 进行文字、图像、Sora 2 视频生成及向量嵌入",
+	"name": "n8n-nodes-maibaoapi",
+	"version": "1.0.0",
+	"description": "便捷调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/kkuxb/n8n-nodes-deerapi.git"
+		"url": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -30,10 +30,10 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/DeerApi.credentials.js"
+			"dist/credentials/MaibaoApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/DeerApi/DeerApi.node.js"
+			"dist/nodes/MaibaoApi/MaibaoApi.node.js"
 		]
 	},
 	"devDependencies": {
