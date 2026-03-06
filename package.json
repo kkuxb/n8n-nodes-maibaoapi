@@ -1,11 +1,11 @@
 {
 	"name": "n8n-nodes-maibaoapi",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "便捷调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-nodes-maibaoapi","maibaoapi","maibao","文字生成","图像生成","Sora 2 视频生成","向量嵌入","nano banana"
 	],
 	"author": {
 		"name": "毛淞淮",

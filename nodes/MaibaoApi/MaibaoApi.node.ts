@@ -212,8 +212,8 @@ export class MaibaoApi implements INodeType {
 				type: 'options',
 				displayOptions: { show: { mode: ['image'] } },
 				options: [
-					{ name: 'Gemini-3.1-Flash-Image', value: 'gemini-3.1-flash-image-preview' },
-					{ name: 'Gemini-3-Pro-Image', value: 'gemini-3-pro-image-preview' },
+					{ name: 'Nano Banana 2', value: 'gemini-3.1-flash-image-preview' },
+					{ name: 'Nano Banana 1 Pro', value: 'gemini-3-pro-image-preview' },
 					{ name: '即梦 5.0', value: 'doubao-seedream-5-0-260128' },
 				],
 				default: 'gemini-3.1-flash-image-preview',
@@ -341,7 +341,7 @@ export class MaibaoApi implements INodeType {
 				displayName: '分辨率',
 				name: 'imageSize',
 				type: 'options',
-				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3-pro-image'] } },
+				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3-pro-image-preview', 'gemini-3.1-flash-image-preview'] } },
 				options: [{ name: '1K', value: '1K' }, { name: '2K', value: '2K' }, { name: '4K', value: '4K' }],
 				default: '1K',
 			},
@@ -535,8 +535,8 @@ export class MaibaoApi implements INodeType {
 							aspectRatio,
 							responseModalities: ["IMAGE"],
 						};
-						// 只有 gemini-3-pro-image 需要 imageSize 参数
-						if (imageModel === 'gemini-3-pro-image-preview') {
+						// 两个 Gemini 模型都需要 imageSize 参数
+						if (imageModel === 'gemini-3-pro-image-preview' || imageModel === 'gemini-3.1-flash-image-preview') {
 							const rawSize = this.getNodeParameter('imageSize', i) as string;
 							generationConfig.imageSize = rawSize;
 						}
