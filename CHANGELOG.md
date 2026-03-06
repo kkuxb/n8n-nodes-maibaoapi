@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-03-06
 
 ### Added
+
 - 初始版本发布
 - 文字生成模式
   - 支持文字 + 图片的多模态输入
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API 端点: `https://api.maibao.chat/v1`
 
 ### Technical
+
 - 基于 n8n-workflow 框架
 - TypeScript 实现
 - 完整的类型定义

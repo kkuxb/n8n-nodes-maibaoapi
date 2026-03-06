@@ -521,7 +521,6 @@ export class MaibaoApi implements INodeType {
 					const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
 
 					if (imageModel === 'gemini-3-pro-image-preview' || imageModel === 'gemini-3.1-flash-image-preview') {
-						const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
 						const parts: any[] = [{ text: userPrompt }];
 
 						// 从收集的 Binary 中提取图片（最多3张）
@@ -531,15 +530,15 @@ export class MaibaoApi implements INodeType {
 						}
 
 						// 根据模型动态构建 generationConfig
+						const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
+						const rawSize = this.getNodeParameter('imageSize', i) as string;
 						const generationConfig: Record<string, unknown> = {
-							aspectRatio,
 							responseModalities: ["IMAGE"],
+							imageConfig: {
+								aspectRatio,
+								imageSize: rawSize,
+							},
 						};
-						// 两个 Gemini 模型都需要 imageSize 参数
-						if (imageModel === 'gemini-3-pro-image-preview' || imageModel === 'gemini-3.1-flash-image-preview') {
-							const rawSize = this.getNodeParameter('imageSize', i) as string;
-							generationConfig.imageSize = rawSize;
-						}
 
 						const res = await this.helpers.request({
 							method: 'POST',
