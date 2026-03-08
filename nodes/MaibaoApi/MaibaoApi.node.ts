@@ -15,6 +15,15 @@ interface ImageData {
 	buffer: Buffer;
 }
 
+// 音频数据接口
+interface AudioData {
+	buffer: Buffer;
+	mimeType: string;
+	fileName: string;
+	propName: string;
+	format: string;
+}
+
 // 收集结果接口，包含 binary 数据和预读取的 buffer 映射
 interface CollectedBinaryResult {
 	binary: Record<string, IBinaryData>;
@@ -166,6 +175,70 @@ async function extractImagesFromBinary(
 	return images;
 }
 
+// 从 Binary 对象中提取音频文件
+async function extractAudioFromBinary(
+	context: IExecuteFunctions,
+	itemIndex: number,
+	binary: Record<string, IBinaryData>,
+	propNames: string[],
+	bufferMap?: Map<string, Buffer>,
+): Promise<AudioData | null> {
+	const supportedFormats = ['flac', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'ogg', 'wav', 'webm'];
+
+	for (const propName of propNames) {
+		const binaryData = binary[propName];
+		if (!binaryData) continue;
+
+		// 检查是否为音频或视频文件
+		const isAudioOrVideo =
+			binaryData.mimeType?.startsWith('audio/') || binaryData.mimeType?.startsWith('video/');
+		if (!isAudioOrVideo) continue;
+
+		// 获取文件扩展名
+		const fileExt = binaryData.fileName?.split('.').pop()?.toLowerCase() || '';
+		if (!fileExt) continue;
+
+		// 验证格式
+		if (!supportedFormats.includes(fileExt)) {
+			throw new NodeOperationError(
+				context.getNode(),
+				`不支持的音频格式：${fileExt}。仅支持 ${supportedFormats.join(', ')}`,
+			);
+		}
+
+		try {
+			// 获取 buffer
+			let buffer: Buffer;
+
+			// 优先使用预读取的 buffer（跨节点收集时已读取）
+			if (bufferMap?.has(propName)) {
+				buffer = bufferMap.get(propName)!;
+			} else if (binaryData.id) {
+				// 存储在文件系统中的 binary（当前节点输入）
+				buffer = await context.helpers.getBinaryDataBuffer(itemIndex, propName);
+			} else if (binaryData.data) {
+				// 内联 base64 数据
+				buffer = Buffer.from(binaryData.data, 'base64');
+			} else {
+				continue;
+			}
+
+			return {
+				buffer,
+				mimeType: binaryData.mimeType,
+				fileName: binaryData.fileName || `audio.${fileExt}`,
+				propName,
+				format: fileExt,
+			};
+		} catch {
+			// 无法读取该音频，跳过
+			continue;
+		}
+	}
+
+	return null;
+}
+
 export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MaibaoAPI',
@@ -188,6 +261,7 @@ export class MaibaoApi implements INodeType {
 					{ name: '图像生成', value: 'image' },
 					{ name: '视频生成 (Sora 2)', value: 'video' },
 					{ name: '向量嵌入 (Embeddings)', value: 'embeddings' },
+					{ name: '音频转文本 (Whisper)', value: 'audio' },
 				],
 				default: 'text',
 			},
@@ -404,7 +478,7 @@ export class MaibaoApi implements INodeType {
 				required: true,
 				description: '需要生成向量嵌入的文本内容',
 			},
-			// --- 图片属性设置 ---
+			// --- 图片/音频属性设置 ---
 			{
 				displayName: 'Binary 来源模式',
 				name: 'binarySourceMode',
@@ -416,13 +490,13 @@ export class MaibaoApi implements INodeType {
 				default: 'current',
 				displayOptions: {
 					show: {
-						mode: ['text', 'image', 'video']
+						mode: ['text', 'image', 'video', 'audio']
 					},
 					hide: {
 						videoOperation: ['remix', 'retrieve', 'download', 'list']
 					}
 				},
-				description: '选择从哪些节点读取 Binary 图片数据',
+				description: '选择从哪些节点读取 Binary 数据',
 			},
 			{
 				displayName: '指定节点名称',
@@ -451,6 +525,44 @@ export class MaibaoApi implements INodeType {
 					}
 				},
 				description: '用于文字识别、图像参考、及视频创建的参考图',
+			},
+			// --- 音频转文本参数 ---
+			{
+				displayName: '音频属性名',
+				name: 'audioPropertyName',
+				type: 'string',
+				default: 'data, data0, video, video0, audio, audio0',
+				displayOptions: {
+					show: {
+						mode: ['audio']
+					}
+				},
+				description: '从 Binary 中读取音频文件的属性名（逗号分隔，自动检测第一个匹配项）',
+			},
+			{
+				displayName: '音频语言',
+				name: 'audioLanguage',
+				type: 'options',
+				displayOptions: { show: { mode: ['audio'] } },
+				options: [
+					{ name: '自动识别', value: '' },
+					{ name: '中文', value: 'zh' },
+					{ name: '英语', value: 'en' },
+				],
+				default: '',
+				description: '指定音频语言可以提高准确性和速度。留空则自动识别。',
+			},
+			{
+				displayName: '输出格式',
+				name: 'audioResponseFormat',
+				type: 'options',
+				displayOptions: { show: { mode: ['audio'] } },
+				options: [
+					{ name: '带时间戳的 JSON 格式', value: 'verbose_json' },
+					{ name: '纯文本格式', value: 'text' },
+				],
+				default: 'verbose_json',
+				description: 'verbose_json 包含分段文本和时间戳信息，text 仅返回纯文本',
 			},
 		],
 		usableAsTool: true,
@@ -687,6 +799,87 @@ export class MaibaoApi implements INodeType {
 							json: true,
 						});
 						returnData.push({ json: res });
+					}
+				}
+
+				else if (mode === 'audio') {
+					// 获取参数
+					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified';
+					const sourceNodeNamesInput = this.getNodeParameter('sourceNodeNames', i, '') as string;
+					const specifiedNodes = sourceNodeNamesInput.split(',').map(s => s.trim()).filter(s => s !== '');
+					const audioPropInput = this.getNodeParameter('audioPropertyName', i, 'data, data0, video, video0, audio, audio0') as string;
+					const propNames = audioPropInput.split(',').map(s => s.trim()).filter(s => s !== '');
+					const language = this.getNodeParameter('audioLanguage', i, '') as string;
+					const responseFormat = this.getNodeParameter('audioResponseFormat', i, 'verbose_json') as string;
+
+					// 收集 Binary 数据
+					const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+
+					// 提取音频文件
+					const audioData = await extractAudioFromBinary(this, i, collectedBinary, propNames, bufferMap);
+
+					if (!audioData) {
+						throw new NodeOperationError(this.getNode(), '未找到音频文件');
+					}
+
+					// 构建 formData
+					const formData: any = {
+						file: {
+							value: audioData.buffer,
+							options: {
+								filename: audioData.fileName,
+								contentType: audioData.mimeType,
+							},
+						},
+						model: 'whisper-1',
+						response_format: responseFormat,
+					};
+
+					// 只有在用户选择了语言时才传递 language 参数
+					if (language) {
+						formData.language = language;
+					}
+
+					// 调用 API
+					const responseData = await this.helpers.request({
+						method: 'POST',
+						url: `${rawBaseUrl}/audio/transcriptions`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiKey}`,
+						},
+						formData,
+						json: true,
+					});
+
+					// 构建输出
+					if (responseFormat === 'text') {
+						// 纯文本格式 - API 返回字符串
+						returnData.push({
+							json: {
+								text: responseData,
+								_metadata: {
+									model: 'whisper-1',
+									format: 'text',
+									audioFormat: audioData.format,
+									sourceProperty: audioData.propName,
+									...(language && { language }),
+								},
+							},
+						});
+					} else {
+						// verbose_json 格式 - API 返回完整对象
+						returnData.push({
+							json: {
+								...responseData,
+								_metadata: {
+									model: 'whisper-1',
+									format: 'verbose_json',
+									audioFormat: audioData.format,
+									sourceProperty: audioData.propName,
+									...(language && { language }),
+								},
+							},
+						});
 					}
 				}
 

@@ -1,0 +1,253 @@
+{
+  "projectName": "n8n-nodes-maibaoapi",
+  "version": "1.0.2",
+  "type": "n8n-community-node",
+  "generated": "2026-03-08",
+  "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
+  "license": "MIT",
+  "author": {
+    "name": "毛淞淮",
+    "email": "263674673@qq.com"
+  },
+  "statistics": {
+    "totalSourceLines": 736,
+    "sourceFiles": 2,
+    "configFiles": 4,
+    "documentationFiles": 4,
+    "testFiles": 0
+  },
+  "structure": {
+    "entryPoints": {
+      "node": "nodes/MaibaoApi/MaibaoApi.node.ts",
+      "credentials": "credentials/MaibaoApi.credentials.ts",
+      "compiled": "dist/nodes/MaibaoApi/MaibaoApi.node.js"
+    },
+    "directories": {
+      "source": ["credentials", "nodes"],
+      "build": ["dist"],
+      "config": [".github", ".vscode"]
+    }
+  },
+  "modules": {
+    "MaibaoApi": {
+      "path": "nodes/MaibaoApi/MaibaoApi.node.ts",
+      "type": "INodeType",
+      "exports": ["MaibaoApi"],
+      "lines": 713,
+      "functions": [
+        "execute",
+        "collectBinaryFromNodes",
+        "extractImagesFromBinary"
+      ],
+      "modes": ["text", "image", "video", "embeddings"],
+      "features": [
+        "multimodal-input",
+        "cross-node-binary-reading",
+        "automatic-base64-conversion",
+        "smart-polling",
+        "storyboard-mode"
+      ]
+    },
+    "MaibaoApiCredentials": {
+      "path": "credentials/MaibaoApi.credentials.ts",
+      "type": "ICredentialType",
+      "exports": ["MaibaoApi"],
+      "lines": 25,
+      "properties": ["apiKey", "baseUrl"]
+    }
+  },
+  "api": {
+    "baseUrls": {
+      "standard": "https://api.maibao.chat/v1",
+      "sora": "https://api.maibao.chat"
+    },
+    "endpoints": {
+      "text": "POST /v1/chat/completions",
+      "imageGemini": "POST /v1beta/models/{model}:generateContent",
+      "imageDoubao": "POST /v1/images/generations",
+      "videoCreate": "POST /v1/videos",
+      "videoRetrieve": "GET /v1/videos/{id}",
+      "videoDownload": "GET /v1/videos/{id}/content",
+      "videoList": "GET /v1/videos",
+      "embeddings": "POST /v1/embeddings"
+    },
+    "models": {
+      "text": {
+        "default": "gemini-3.1-pro-preview",
+        "customSupported": true
+      },
+      "image": [
+        {
+          "id": "gemini-3.1-flash-image-preview",
+          "name": "Nano Banana 2",
+          "aspectRatios": 13,
+          "resolutions": ["1K", "2K", "4K"]
+        },
+        {
+          "id": "gemini-3-pro-image-preview",
+          "name": "Nano Banana 1 Pro",
+          "aspectRatios": 9,
+          "resolutions": ["1K", "2K", "4K"]
+        },
+        {
+          "id": "doubao-seedream-5-0-260128",
+          "name": "即梦 5.0",
+          "aspectRatios": 0,
+          "resolutions": ["2K", "3K"]
+        }
+      ],
+      "video": [
+        {
+          "id": "sora-2-all",
+          "name": "Sora 2"
+        },
+        {
+          "id": "sora-2-pro-all",
+          "name": "Sora 2 Pro"
+        }
+      ],
+      "embeddings": [
+        "text-embedding-3-large",
+        "text-embedding-3-small"
+      ]
+    }
+  },
+  "configuration": {
+    "typescript": {
+      "target": "es2019",
+      "module": "commonjs",
+      "strict": true,
+      "outDir": "dist/"
+    },
+    "prettier": {
+      "useTabs": true,
+      "tabWidth": 2,
+      "singleQuote": true,
+      "trailingComma": "all",
+      "printWidth": 100
+    },
+    "n8n": {
+      "apiVersion": 1,
+      "strict": true,
+      "usableAsTool": true
+    }
+  },
+  "dependencies": {
+    "peer": {
+      "n8n-workflow": "*"
+    },
+    "dev": {
+      "@n8n/node-cli": "*",
+      "@types/node": "^25.0.3",
+      "eslint": "9.32.0",
+      "prettier": "3.6.2",
+      "release-it": "^19.0.4",
+      "typescript": "5.9.2"
+    }
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "buildWatch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lintFix": "n8n-node lint --fix",
+    "release": "n8n-node release"
+  },
+  "ci": {
+    "platform": "github-actions",
+    "nodeVersion": "22",
+    "steps": ["npm ci", "npm run lint", "npm run build"],
+    "triggers": ["pull_request", "push:main"]
+  },
+  "documentation": {
+    "README.md": {
+      "size": "7.6KB",
+      "language": "Chinese",
+      "sections": [
+        "Why",
+        "Features",
+        "Installation",
+        "Usage",
+        "Version History",
+        "Disclaimer"
+      ]
+    },
+    "CLAUDE.md": {
+      "size": "3.8KB",
+      "purpose": "Claude Code guidance",
+      "sections": [
+        "Project Overview",
+        "Development Commands",
+        "Architecture",
+        "API Integration",
+        "Binary Data Handling",
+        "Code Style"
+      ]
+    },
+    "CHANGELOG.md": {
+      "size": "1.3KB",
+      "latestVersion": "1.0.0",
+      "date": "2024-03-06"
+    },
+    "LICENSE.md": {
+      "size": "1KB",
+      "type": "MIT"
+    }
+  },
+  "features": {
+    "binaryDataHandling": {
+      "modes": ["current", "specified"],
+      "maxImages": 3,
+      "defaultProperties": ["data", "data0", "data1", "data2", "file", "attachment"],
+      "preReading": true
+    },
+    "videoGeneration": {
+      "storyboardMode": true,
+      "smartPolling": {
+        "enabled": true,
+        "interval": 15000,
+        "timeout": 600000
+      },
+      "operations": ["create", "remix", "retrieve", "download", "list"],
+      "downloadTimeout": 300000
+    },
+    "multimodal": {
+      "textAndImage": true,
+      "maxImagesPerRequest": 3,
+      "automaticBase64": true
+    }
+  },
+  "tokenEfficiency": {
+    "indexSize": "~3KB",
+    "fullCodebaseTokens": "~15000",
+    "indexTokens": "~2000",
+    "savingsPercentage": 87
+  },
+  "versionHistory": [
+    {
+      "version": "1.0.2",
+      "status": "current",
+      "notes": "Latest stable release"
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-03-06",
+      "changes": [
+        "Initial MaibaoAPI version",
+        "Migrated from DeerAPI",
+        "Model upgrades",
+        "All features retained"
+      ]
+    }
+  ],
+  "keywords": [
+    "n8n-nodes-maibaoapi",
+    "maibaoapi",
+    "maibao",
+    "文字生成",
+    "图像生成",
+    "Sora 2 视频生成",
+    "向量嵌入",
+    "nano banana"
+  ]
+}

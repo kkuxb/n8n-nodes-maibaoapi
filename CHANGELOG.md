@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-08
+
+### Added
+
+- 音频转文本模式（Whisper-1）
+  - 使用 whisper-1 模型进行音频转写
+  - 支持 9 种音频格式：flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm
+  - 支持自动语言识别和手动语言选择（中文/英语）
+  - 支持两种输出格式：
+    - 带时间戳的 JSON 格式（包含分段信息、时间戳、音频时长）
+    - 纯文本格式（仅返回转写文本）
+  - 自动音频文件提取和格式验证
+  - 支持从当前节点或指定节点读取 Binary 音频数据
+  - 完整的错误处理和友好的错误提示
+  - 适配抖音等平台视频音频转录场景
+
+### Changed
+
+- Binary 来源模式现在支持音频文件读取
+- 更新 README.md 添加音频转文本功能说明
+
+### Technical
+
+- 新增 `AudioData` 接口定义
+- 新增 `extractAudioFromBinary` 函数用于音频文件提取
+- 新增 3 个节点参数：audioPropertyName, audioLanguage, audioResponseFormat
+- API 端点: `POST /v1/audio/transcriptions`
+
 ## [1.0.0] - 2024-03-06
 
 ### Added
@@ -36,4 +64,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完整的类型定义
 - 自动 Base64 转换
 
-[1.0.0]: https://github.com/maosonghuai/n8n-nodes-maibaoapi/releases/tag/v1.0.0
+[1.1.0]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.1.0
+[1.0.0]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.0.0

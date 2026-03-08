@@ -16,10 +16,8 @@ export class MaibaoApi implements ICredentialType {
 		{
 			displayName: 'Base URL',
 			name: 'baseUrl',
-			type: 'string',
+			type: 'hidden',
 			default: 'https://api.maibao.chat/v1',
-			placeholder: 'https://api.maibao.chat/v1',
-			required: true,
 		},
 	];
 }
