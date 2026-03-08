@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 支持 9 种音频格式：flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, webm
   - 支持自动语言识别和手动语言选择（中文/英语）
   - 支持两种输出格式：
-    - 带时间戳的 JSON 格式（包含分段信息、时间戳、音频时长）
+    - 带时间戳的 JSON 格式（包含词级别时间戳，更简洁精确）
     - 纯文本格式（仅返回转写文本）
   - 自动音频文件提取和格式验证
   - 支持从当前节点或指定节点读取 Binary 音频数据
@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Binary 来源模式现在支持音频文件读取
+- 凭证配置优化：Base URL 改为隐藏字段，用户无法修改，避免配置错误
+- 音频转文本 verbose_json 格式使用词级别（word）时间戳，输出更简洁（仅包含 word、start、end 字段）
 - 更新 README.md 添加音频转文本功能说明
 
 ### Technical
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 新增 `extractAudioFromBinary` 函数用于音频文件提取
 - 新增 3 个节点参数：audioPropertyName, audioLanguage, audioResponseFormat
 - API 端点: `POST /v1/audio/transcriptions`
+- verbose_json 格式添加 `timestamp_granularities[]=word` 参数
 
 ## [1.0.0] - 2024-03-06
 

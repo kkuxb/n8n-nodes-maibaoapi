@@ -261,7 +261,7 @@ export class MaibaoApi implements INodeType {
 					{ name: '图像生成', value: 'image' },
 					{ name: '视频生成 (Sora 2)', value: 'video' },
 					{ name: '向量嵌入 (Embeddings)', value: 'embeddings' },
-					{ name: '音频转文本 (Whisper)', value: 'audio' },
+					{ name: '音频转文本', value: 'audio' },
 				],
 				default: 'text',
 			},
@@ -838,6 +838,11 @@ export class MaibaoApi implements INodeType {
 					// 只有在用户选择了语言时才传递 language 参数
 					if (language) {
 						formData.language = language;
+					}
+
+					// 如果是 verbose_json 格式，添加 timestamp_granularities 参数
+					if (responseFormat === 'verbose_json') {
+						formData.timestamp_granularities = ['word'];
 					}
 
 					// 调用 API
