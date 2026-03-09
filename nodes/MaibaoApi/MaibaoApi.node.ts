@@ -239,6 +239,57 @@ async function extractAudioFromBinary(
 	return null;
 }
 
+// 将词级别时间戳转换为句级别时间戳
+function convertWordsToSentences(data: any): any {
+	if (!data.text || !data.words || data.words.length === 0) {
+		return data;
+	}
+
+	// 按空格分割句子
+	const sentences = data.text.split(' ').filter((s: string) => s.trim());
+	const words = data.words;
+	let wordIndex = 0;
+	const result = [];
+
+	for (const sentence of sentences) {
+		if (!sentence.trim()) continue;
+
+		// 移除句子中的空格，得到纯文本用于匹配
+		const sentenceText = sentence.replace(/\s+/g, '');
+		const sentenceWords = [];
+		let matchedText = '';
+
+		// 匹配句子中的所有词
+		while (wordIndex < words.length && matchedText.length < sentenceText.length) {
+			const word = words[wordIndex];
+			sentenceWords.push(word);
+			matchedText += word.word;
+			wordIndex++;
+
+			// 如果已经匹配完整个句子，停止
+			if (matchedText === sentenceText) {
+				break;
+			}
+		}
+
+		// 如果找到了对应的词，添加句子
+		if (sentenceWords.length > 0) {
+			result.push({
+				text: sentence,
+				start: parseFloat(sentenceWords[0].start.toFixed(1)),
+				end: parseFloat(sentenceWords[sentenceWords.length - 1].end.toFixed(1)),
+			});
+		}
+	}
+
+	// 返回新的数据结构，包含句子而非词
+	return {
+		...data,
+		sentences: result,
+		words: undefined, // 移除 words 字段
+	};
+}
+
 export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MaibaoAPI',
@@ -873,14 +924,18 @@ export class MaibaoApi implements INodeType {
 						});
 					} else {
 						// verbose_json 格式 - API 返回完整对象
+						// 将词级别时间戳转换为句级别时间戳
+						const convertedData = convertWordsToSentences(responseData);
+
 						returnData.push({
 							json: {
-								...responseData,
+								...convertedData,
 								_metadata: {
 									model: 'whisper-1',
 									format: 'verbose_json',
 									audioFormat: audioData.format,
 									sourceProperty: audioData.propName,
+									timestampGranularity: 'sentence',
 									...(language && { language }),
 								},
 							},

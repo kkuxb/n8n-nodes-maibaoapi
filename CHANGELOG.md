@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-03-09
+
+### Changed
+
+- 音频转文本 verbose_json 格式现在输出**句级别时间戳**（而非词级别）
+  - 自动将词级别时间戳转换为句级别时间戳
+  - 按空格分割句子，提取每句话的开始和结束时间
+  - 时间保留 1 位小数（秒为单位）
+  - 输出 `sentences` 字段，每个句子包含 `text`、`start`、`end`
+  - 数据量减少约 90%，可读性大幅提升
+  - 更适合段落摘要、时间轴分析等实际应用场景
+
+### Technical
+
+- 新增 `convertWordsToSentences()` 函数用于时间戳转换
+- 修改 verbose_json 输出逻辑，自动应用句级别转换
+- 添加 `timestampGranularity: 'sentence'` 元数据标识
+
+## [1.1.1] - 2026-03-09
+
+### Fixed
+
+- 修正 `timestamp_granularities` 参数格式
+  - 将 `formData.timestamp_granularities = ['word']` 改为 `formData['timestamp_granularities[]'] = 'word'`
+  - 修复 verbose_json 格式未返回词级别时间戳的问题
+  - 已通过实际 API 测试验证
+
 ## [1.1.0] - 2026-03-08
 
 ### Added
