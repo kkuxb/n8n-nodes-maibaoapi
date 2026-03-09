@@ -905,6 +905,7 @@ export class MaibaoApi implements INodeType {
 						},
 						formData,
 						json: true,
+						timeout: 600000, // 音频转文本超时时间设置为 10 分钟 (600,000ms)
 					});
 
 					// 构建输出
