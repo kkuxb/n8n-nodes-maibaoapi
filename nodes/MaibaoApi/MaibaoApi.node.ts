@@ -842,7 +842,7 @@ export class MaibaoApi implements INodeType {
 
 					// 如果是 verbose_json 格式，添加 timestamp_granularities 参数
 					if (responseFormat === 'verbose_json') {
-						formData.timestamp_granularities = ['word'];
+						formData['timestamp_granularities[]'] = 'word';
 					}
 
 					// 调用 API

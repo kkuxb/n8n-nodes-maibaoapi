@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-maibaoapi",
-	"version": "1.1.0",
+	"version": "1.1.2",
 	"description": "便捷调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成、音频转文本及向量嵌入",
 	"license": "MIT",
 	"homepage": "",
