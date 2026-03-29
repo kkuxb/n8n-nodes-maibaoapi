@@ -350,7 +350,7 @@ export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MaibaoAPI',
 		name: 'maibaoApi',
-		icon: 'file:maibaoapi.svg',
+		icon: 'file:maibaoapi.png',
 		group: ['transform'],
 		version: 1,
 		description: '调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入',
@@ -365,10 +365,10 @@ export class MaibaoApi implements INodeType {
 				name: 'mode',
 				type: 'options',
 				options: [
-					{ name: '视频生成 (Sora 2)', value: 'video' },
+					// { name: '视频生成 (Sora 2)', value: 'video' },
 					{ name: '图像生成', value: 'image' },
 					{ name: '文字生成', value: 'text' },
-					{ name: '向量嵌入 (Embeddings)', value: 'embeddings' },
+					// { name: '向量嵌入 (Embeddings)', value: 'embeddings' },
 					{ name: '音频转文本', value: 'audio' },
 				],
 				default: 'text',
