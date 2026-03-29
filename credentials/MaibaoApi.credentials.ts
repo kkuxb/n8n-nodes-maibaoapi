@@ -1,8 +1,9 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import { ICredentialType, INodeProperties, ICredentialTestRequest } from 'n8n-workflow';
 
 export class MaibaoApi implements ICredentialType {
 	name = 'maibaoApi';
 	displayName = 'MaibaoAPI API';
+	icon = { light: 'file:maibaoapi.svg', dark: 'file:maibaoapi.svg' } as const;
 	documentationUrl = 'https://maibaoapi.apifox.cn/';
 	properties: INodeProperties[] = [
 		{
@@ -20,4 +21,13 @@ export class MaibaoApi implements ICredentialType {
 			default: 'https://api.maibao.chat/v1',
 		},
 	];
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl}}',
+			url: '/models',
+			headers: {
+				Authorization: '=Bearer {{$credentials.apiKey}}',
+			},
+		},
+	};
 }

@@ -175,6 +175,48 @@ async function extractImagesFromBinary(
 	return images;
 }
 
+// 从 URL 下载图片
+async function downloadImagesFromUrls(
+	context: IExecuteFunctions,
+	urls: string[],
+	maxImages: number,
+): Promise<ImageData[]> {
+	const images: ImageData[] = [];
+
+	for (const url of urls) {
+		if (images.length >= maxImages) break;
+		if (!url) continue;
+
+		try {
+			const response = await context.helpers.httpRequest({
+				method: 'GET',
+				url,
+				encoding: 'arraybuffer',
+				returnFullResponse: true,
+			});
+
+			const buffer = Buffer.from(response.body as ArrayBuffer);
+			const contentType = (response.headers['content-type'] || 'image/jpeg') as string;
+			const mimeType = contentType.split(';')[0].trim();
+
+			// 仅处理图片类型
+			if (!mimeType.startsWith('image/')) continue;
+
+			images.push({
+				base64: buffer.toString('base64'),
+				mimeType,
+				fileName: url.split('/').pop()?.split('?')[0] || 'image.jpg',
+				buffer,
+			});
+		} catch {
+			// 下载失败，跳过
+			continue;
+		}
+	}
+
+	return images;
+}
+
 // 从 Binary 对象中提取音频文件
 async function extractAudioFromBinary(
 	context: IExecuteFunctions,
@@ -239,8 +281,22 @@ async function extractAudioFromBinary(
 	return null;
 }
 
+// Whisper API 响应中的词条目
+interface WhisperWord {
+	word: string;
+	start: number;
+	end: number;
+}
+
+// Whisper API 响应
+interface WhisperResponse {
+	text?: string;
+	words?: WhisperWord[];
+	[key: string]: unknown;
+}
+
 // 将词级别时间戳转换为句级别时间戳
-function convertWordsToSentences(data: any): any {
+function convertWordsToSentences(data: WhisperResponse): WhisperResponse {
 	if (!data.text || !data.words || data.words.length === 0) {
 		return data;
 	}
@@ -294,13 +350,14 @@ export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MaibaoAPI',
 		name: 'maibaoApi',
-		icon: 'file:maibaoapi.png',
+		icon: 'file:maibaoapi.svg',
 		group: ['transform'],
 		version: 1,
 		description: '调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入',
 		defaults: { name: 'MaibaoAPI' },
 		inputs: ['main'],
 		outputs: ['main'],
+		// eslint-disable-next-line @n8n/community-nodes/no-credential-reuse
 		credentials: [{ name: 'maibaoApi', required: true }],
 		properties: [
 			{
@@ -308,9 +365,9 @@ export class MaibaoApi implements INodeType {
 				name: 'mode',
 				type: 'options',
 				options: [
-					{ name: '文字生成', value: 'text' },
-					{ name: '图像生成', value: 'image' },
 					{ name: '视频生成 (Sora 2)', value: 'video' },
+					{ name: '图像生成', value: 'image' },
+					{ name: '文字生成', value: 'text' },
 					{ name: '向量嵌入 (Embeddings)', value: 'embeddings' },
 					{ name: '音频转文本', value: 'audio' },
 				],
@@ -325,8 +382,8 @@ export class MaibaoApi implements INodeType {
 					{ name: '创建视频', value: 'create' },
 					{ name: '混编/修改视频', value: 'remix' },
 					{ name: '检索视频', value: 'retrieve' },
-					{ name: '下载视频', value: 'download' },
 					{ name: '列出视频', value: 'list' },
+					{ name: '下载视频', value: 'download' },
 				],
 				default: 'create',
 			},
@@ -384,7 +441,7 @@ export class MaibaoApi implements INodeType {
 				type: 'boolean',
 				displayOptions: { show: { mode: ['video'], videoOperation: ['create'] } },
 				default: false,
-				description: '开启后可分镜头填写提示词，节点将自动组合格式',
+				description: 'Whether to enable storyboard mode for multi-shot prompts',
 			},
 			{
 				displayName: '分镜列表',
@@ -459,7 +516,7 @@ export class MaibaoApi implements INodeType {
 				type: 'boolean',
 				displayOptions: { show: { mode: ['video'], videoOperation: ['retrieve'] } },
 				default: true,
-				description: '开启后将每15秒查询一次状态，直到完成或失败（上限10分钟）',
+				description: 'Whether to poll every 15s until completed or failed (max 10 minutes)',
 			},
 			// --- 分辨率：图像生成 ---
 			{
@@ -484,11 +541,11 @@ export class MaibaoApi implements INodeType {
 				type: 'options',
 				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3-pro-image-preview'] } },
 				options: [
-					{ name: '1:1', value: '1:1' }, { name: '3:2', value: '3:2' },
-					{ name: '2:3', value: '2:3' }, { name: '16:9', value: '16:9' },
-					{ name: '9:16', value: '9:16' }, { name: '3:4', value: '3:4' },
-					{ name: '4:3', value: '4:3' }, { name: '4:5', value: '4:5' },
-					{ name: '5:4', value: '5:4' },
+					{ name: '1:1', value: '1:1' }, { name: '16:9', value: '16:9' },
+					{ name: '2:3', value: '2:3' }, { name: '3:2', value: '3:2' },
+					{ name: '3:4', value: '3:4' }, { name: '4:3', value: '4:3' },
+					{ name: '4:5', value: '4:5' }, { name: '5:4', value: '5:4' },
+					{ name: '9:16', value: '9:16' },
 				],
 				default: '1:1',
 			},
@@ -498,13 +555,13 @@ export class MaibaoApi implements INodeType {
 				type: 'options',
 				displayOptions: { show: { mode: ['image'], imageModel: ['gemini-3.1-flash-image-preview'] } },
 				options: [
-					{ name: '1:1', value: '1:1' }, { name: '3:2', value: '3:2' },
-					{ name: '2:3', value: '2:3' }, { name: '16:9', value: '16:9' },
-					{ name: '9:16', value: '9:16' }, { name: '3:4', value: '3:4' },
+					{ name: '1:1', value: '1:1' }, { name: '1:4', value: '1:4' },
+					{ name: '1:8', value: '1:8' }, { name: '16:9', value: '16:9' },
+					{ name: '2:3', value: '2:3' }, { name: '3:2', value: '3:2' },
+					{ name: '3:4', value: '3:4' }, { name: '4:1', value: '4:1' },
 					{ name: '4:3', value: '4:3' }, { name: '4:5', value: '4:5' },
-					{ name: '5:4', value: '5:4' }, { name: '1:4', value: '1:4' },
-					{ name: '4:1', value: '4:1' }, { name: '1:8', value: '1:8' },
-					{ name: '8:1', value: '8:1' },
+					{ name: '5:4', value: '5:4' }, { name: '8:1', value: '8:1' },
+					{ name: '9:16', value: '9:16' },
 				],
 				default: '1:1',
 			},
@@ -537,14 +594,31 @@ export class MaibaoApi implements INodeType {
 				options: [
 					{ name: '当前节点输入', value: 'current' },
 					{ name: '指定节点', value: 'specified' },
+					{ name: '从 URL 获取', value: 'url' },
 				],
 				default: 'current',
 				displayOptions: {
 					show: {
-						mode: ['text', 'image', 'video', 'audio']
+						mode: ['text', 'image', 'video']
 					},
 					hide: {
 						videoOperation: ['remix', 'retrieve', 'download', 'list']
+					}
+				},
+				description: '选择从哪些节点读取 Binary 数据，或从 URL 获取图片',
+			},
+			{
+				displayName: 'Binary 来源模式',
+				name: 'binarySourceMode',
+				type: 'options',
+				options: [
+					{ name: '当前节点输入', value: 'current' },
+					{ name: '指定节点', value: 'specified' },
+				],
+				default: 'current',
+				displayOptions: {
+					show: {
+						mode: ['audio']
 					}
 				},
 				description: '选择从哪些节点读取 Binary 数据',
@@ -563,6 +637,23 @@ export class MaibaoApi implements INodeType {
 				description: '用逗号分隔多个节点名称（精确匹配）',
 			},
 			{
+				displayName: '图片 URL',
+				name: 'imageUrls',
+				type: 'string',
+				default: '',
+				placeholder: 'https://example.com/image1.jpg, https://example.com/image2.jpg',
+				displayOptions: {
+					show: {
+						binarySourceMode: ['url'],
+						mode: ['text', 'image', 'video']
+					},
+					hide: {
+						videoOperation: ['remix', 'retrieve', 'download', 'list']
+					}
+				},
+				description: '输入图片 URL，多个 URL 用逗号分隔（最多10张）',
+			},
+			{
 				displayName: '图片属性名',
 				name: 'binaryPropertyName',
 				type: 'string',
@@ -572,7 +663,8 @@ export class MaibaoApi implements INodeType {
 						mode: ['text', 'image', 'video']
 					},
 					hide: {
-						videoOperation: ['remix', 'retrieve', 'download', 'list']
+						videoOperation: ['remix', 'retrieve', 'download', 'list'],
+						binarySourceMode: ['url']
 					}
 				},
 				description: '用于文字识别、图像参考、及视频创建的参考图',
@@ -613,7 +705,7 @@ export class MaibaoApi implements INodeType {
 					{ name: '纯文本格式', value: 'text' },
 				],
 				default: 'verbose_json',
-				description: 'verbose_json 包含分段文本和时间戳信息，text 仅返回纯文本',
+				description: 'Verbose_json 包含分段文本和时间戳信息，text 仅返回纯文本',
 			},
 		],
 		usableAsTool: true,
@@ -644,19 +736,34 @@ export class MaibaoApi implements INodeType {
 					}
 
 					// 获取 Binary 来源模式参数
-					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified';
+					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified' | 'url';
 					const sourceNodeNamesInput = this.getNodeParameter('sourceNodeNames', i, '') as string;
 					const specifiedNodes = sourceNodeNamesInput.split(',').map(s => s.trim()).filter(s => s !== '');
 
-					// 收集 Binary 数据
-					const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+					// 提取图片（最多10张）
+					let extractedImages: ImageData[];
+					if (binarySourceMode === 'url') {
+						const imageUrlsInput = this.getNodeParameter('imageUrls', i, '') as string;
+						const urls = imageUrlsInput.split(',').map(s => s.trim()).filter(s => s !== '');
+						extractedImages = await downloadImagesFromUrls(this, urls, 10);
+					} else {
+						// 收集 Binary 数据
+						const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+						extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 10, bufferMap);
+					}
 
-					// 从收集的 Binary 中提取图片
-					const extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 1, bufferMap);
-					const firstBase64 = extractedImages.length > 0 ? extractedImages[0].base64 : '';
-					const firstMime = extractedImages.length > 0 ? extractedImages[0].mimeType : 'image/jpeg';
+					// 构建用户消息内容（支持多图）
+					let userContent: string | Array<Record<string, unknown>>;
+					if (extractedImages.length > 0) {
+						userContent = [{ type: 'text', text: combinedPrompt }];
+						for (const img of extractedImages) {
+							userContent.push({ type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.base64}` } });
+						}
+					} else {
+						userContent = combinedPrompt;
+					}
 
-					const responseData = await this.helpers.request({
+					const responseData = await this.helpers.httpRequest({
 						method: 'POST',
 						url: `${rawBaseUrl}/chat/completions`,
 						headers: { Authorization: `Bearer ${credentials.apiKey}` },
@@ -664,7 +771,7 @@ export class MaibaoApi implements INodeType {
 							model,
 							messages: [
 								{ role: 'system', content: systemPrompt },
-								{ role: 'user', content: firstBase64 ? [{ type: 'text', text: combinedPrompt }, { type: 'image_url', image_url: { url: `data:${firstMime};base64,${firstBase64}` } }] : combinedPrompt }
+								{ role: 'user', content: userContent }
 							]
 						},
 						json: true,
@@ -676,18 +783,23 @@ export class MaibaoApi implements INodeType {
 					const imageModel = this.getNodeParameter('imageModel', i) as string;
 
 					// 获取 Binary 来源模式参数
-					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified';
+					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified' | 'url';
 					const sourceNodeNamesInput = this.getNodeParameter('sourceNodeNames', i, '') as string;
 					const specifiedNodes = sourceNodeNamesInput.split(',').map(s => s.trim()).filter(s => s !== '');
 
-					// 收集 Binary 数据
-					const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
-
 					if (imageModel === 'gemini-3-pro-image-preview' || imageModel === 'gemini-3.1-flash-image-preview') {
-						const parts: any[] = [{ text: userPrompt }];
+						const parts: Array<Record<string, unknown>> = [{ text: userPrompt }];
 
-						// 从收集的 Binary 中提取图片（最多3张）
-						const extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 3, bufferMap);
+						// 提取图片（最多10张）
+						let extractedImages: ImageData[];
+						if (binarySourceMode === 'url') {
+							const imageUrlsInput = this.getNodeParameter('imageUrls', i, '') as string;
+							const urls = imageUrlsInput.split(',').map(s => s.trim()).filter(s => s !== '');
+							extractedImages = await downloadImagesFromUrls(this, urls, 10);
+						} else {
+							const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+							extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 10, bufferMap);
+						}
 						for (const img of extractedImages) {
 							parts.push({ inline_data: { data: img.base64, mime_type: img.mimeType } });
 						}
@@ -703,28 +815,36 @@ export class MaibaoApi implements INodeType {
 							},
 						};
 
-						const res = await this.helpers.request({
+						const res = await this.helpers.httpRequest({
 							method: 'POST',
 							url: `${rawBaseUrl.replace(/\/v1$/, '')}/v1beta/models/${imageModel}:generateContent`,
 							headers: { Authorization: `Bearer ${credentials.apiKey}` },
 							body: { contents: [{ role: 'user', parts }], generationConfig },
 							json: true,
 						});
-						const b64 = res.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData.data;
+						const b64 = res.candidates?.[0]?.content?.parts?.find((p: Record<string, unknown>) => p.inlineData)?.inlineData.data;
 						if (b64) {
 							const outputFileName = imageModel === 'gemini-3.1-flash-image-preview' ? 'gemini_flash_image.png' : 'gemini_image.png';
 							const binaryOutput = await this.helpers.prepareBinaryData(Buffer.from(b64, 'base64'), outputFileName, 'image/png');
 							returnData.push({ json: { status: 'success' }, binary: { data: binaryOutput } });
-						} else throw new Error(`Gemini 接口未返回图像。`);
+						} else throw new NodeOperationError(this.getNode(), 'Gemini 接口未返回图像。');
 
 					} else {
 						// 即梦模型需要 imageSize 参数
 						const rawSize = this.getNodeParameter('imageSize', i) as string;
-						// 从收集的 Binary 中提取图片（最多3张）
-						const extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 3, bufferMap);
+						// 提取图片（最多10张）
+						let extractedImages: ImageData[];
+						if (binarySourceMode === 'url') {
+							const imageUrlsInput = this.getNodeParameter('imageUrls', i, '') as string;
+							const urls = imageUrlsInput.split(',').map(s => s.trim()).filter(s => s !== '');
+							extractedImages = await downloadImagesFromUrls(this, urls, 10);
+						} else {
+							const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+							extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 10, bufferMap);
+						}
 						const images: string[] = extractedImages.map(img => `data:${img.mimeType};base64,${img.base64}`);
 
-						const responseData = await this.helpers.request({
+						const responseData = await this.helpers.httpRequest({
 							method: 'POST',
 							url: `${rawBaseUrl}/images/generations`,
 							headers: { Authorization: `Bearer ${credentials.apiKey}` },
@@ -734,7 +854,7 @@ export class MaibaoApi implements INodeType {
 						if (responseData.data?.[0]?.b64_json) {
 							const binaryOutput = await this.helpers.prepareBinaryData(Buffer.from(responseData.data[0].b64_json, 'base64'), `doubao_image.png`, 'image/png');
 							returnData.push({ json: { status: 'success' }, binary: { data: binaryOutput } });
-						} else throw new Error(`即梦接口未返回图像。`);
+						} else throw new NodeOperationError(this.getNode(), '即梦接口未返回图像。');
 					}
 
 				} else if (mode === 'video') {
@@ -747,9 +867,9 @@ export class MaibaoApi implements INodeType {
 						let finalPrompt = '';
 
 						if (storyboardMode) {
-							const shotCollection = this.getNodeParameter('storyboardShots', i) as any;
+							const shotCollection = this.getNodeParameter('storyboardShots', i) as { shots?: Array<{ shotPrompt: string; duration: number }> };
 							if (shotCollection?.shots) {
-								finalPrompt = shotCollection.shots.map((s: any, index: number) => {
+								finalPrompt = shotCollection.shots.map((s, index) => {
 									return `Shot ${index + 1}:\nduration: ${s.duration}sec\nScene: ${s.shotPrompt}`;
 								}).join('\n\n');
 							}
@@ -757,18 +877,24 @@ export class MaibaoApi implements INodeType {
 							finalPrompt = this.getNodeParameter('videoPrompt', i, '') as string;
 						}
 
-						const formData: any = { prompt: finalPrompt, model, size };
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						const formData: Record<string, any> = { prompt: finalPrompt, model, size };
 
 						// 获取 Binary 来源模式参数
-						const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified';
+						const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified' | 'url';
 						const sourceNodeNamesInput = this.getNodeParameter('sourceNodeNames', i, '') as string;
 						const specifiedNodes = sourceNodeNamesInput.split(',').map(s => s.trim()).filter(s => s !== '');
 
-						// 收集 Binary 数据
-						const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
-
-						// 从收集的 Binary 中提取图片（只取第一张作为参考图）
-						const extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 1, bufferMap);
+						// 提取参考图（只取第一张）
+						let extractedImages: ImageData[];
+						if (binarySourceMode === 'url') {
+							const imageUrlsInput = this.getNodeParameter('imageUrls', i, '') as string;
+							const urls = imageUrlsInput.split(',').map(s => s.trim()).filter(s => s !== '');
+							extractedImages = await downloadImagesFromUrls(this, urls, 1);
+						} else {
+							const { binary: collectedBinary, bufferMap } = await collectBinaryFromNodes(this, i, binarySourceMode, specifiedNodes);
+							extractedImages = await extractImagesFromBinary(this, i, collectedBinary, propNames, 1, bufferMap);
+						}
 						if (extractedImages.length > 0) {
 							const img = extractedImages[0];
 							formData.input_reference = {
@@ -777,6 +903,7 @@ export class MaibaoApi implements INodeType {
 							};
 						}
 
+						// eslint-disable-next-line @n8n/community-nodes/no-deprecated-workflow-functions
 						const res = await this.helpers.request({
 							method: 'POST',
 							url: `${soraBaseUrl}/v1/videos`,
@@ -789,7 +916,7 @@ export class MaibaoApi implements INodeType {
 					} else if (operation === 'remix') {
 						const video_id = this.getNodeParameter('videoId', i) as string;
 						const prompt = this.getNodeParameter('videoPrompt', i, '') as string;
-						const res = await this.helpers.request({
+						const res = await this.helpers.httpRequest({
 							method: 'POST',
 							url: `${soraBaseUrl}/v1/videos/${video_id}/remix`,
 							headers: { Authorization: `${credentials.apiKey}` },
@@ -802,52 +929,51 @@ export class MaibaoApi implements INodeType {
 						const video_id = this.getNodeParameter('videoId', i) as string;
 						const smartWait = this.getNodeParameter('smartWait', i) as boolean;
 						
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						let res: any;
 						if (smartWait) {
 							for (let attempt = 0; attempt < 40; attempt++) {
-								res = await this.helpers.request({
+								res = await this.helpers.httpRequest({
 									method: 'GET',
 									url: `${soraBaseUrl}/v1/videos/${video_id}`,
 									headers: { Authorization: `${credentials.apiKey}` },
-									json: true,
 								});
 								if (['completed', 'failed'].includes(res.status)) break;
-								await new Promise(resolve => setTimeout(resolve, 15000));
+								// eslint-disable-next-line @n8n/community-nodes/no-restricted-globals
+							await new Promise(resolve => globalThis.setTimeout(resolve, 15000));
 							}
 						} else {
-							res = await this.helpers.request({
+							res = await this.helpers.httpRequest({
 								method: 'GET',
 								url: `${soraBaseUrl}/v1/videos/${video_id}`,
 								headers: { Authorization: `${credentials.apiKey}` },
-								json: true,
 							});
 						}
 						returnData.push({ json: res });
 
 					} else if (operation === 'download') {
 						const video_id = this.getNodeParameter('videoId', i) as string;
-						const response = await this.helpers.request({
+						const response = await this.helpers.httpRequest({
 							method: 'GET',
 							url: `${soraBaseUrl}/v1/videos/${video_id}/content`,
 							headers: { Authorization: `${credentials.apiKey}` },
 							qs: { variant: 'video' },
-							encoding: null,
-							resolveWithFullResponse: true,
-							timeout: 300000, // 增加超时时间到 5 分钟 (300,000ms) 以支持大视频下载
+							encoding: 'arraybuffer',
+							returnFullResponse: true,
+							timeout: 300000,
 						});
 						const binaryOutput = await this.helpers.prepareBinaryData(
-							Buffer.from(response.body), 
+							Buffer.from(response.body as ArrayBuffer), 
 							'sora_video.mp4',
 							'video/mp4'
 						);
 						returnData.push({ json: { status: 'success' }, binary: { data: binaryOutput } });
 
 					} else if (operation === 'list') {
-						const res = await this.helpers.request({
+						const res = await this.helpers.httpRequest({
 							method: 'GET',
 							url: `${soraBaseUrl}/v1/videos`,
 							headers: { Authorization: `${credentials.apiKey}` },
-							json: true,
 						});
 						returnData.push({ json: res });
 					}
@@ -874,7 +1000,8 @@ export class MaibaoApi implements INodeType {
 					}
 
 					// 构建 formData
-					const formData: any = {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const formData: Record<string, any> = {
 						file: {
 							value: audioData.buffer,
 							options: {
@@ -896,7 +1023,8 @@ export class MaibaoApi implements INodeType {
 						formData['timestamp_granularities[]'] = 'word';
 					}
 
-					// 调用 API
+					// 调用 API（使用 request 因为 httpRequest 不支持 formData 且不允许导入 form-data）
+					// eslint-disable-next-line @n8n/community-nodes/no-deprecated-workflow-functions
 					const responseData = await this.helpers.request({
 						method: 'POST',
 						url: `${rawBaseUrl}/audio/transcriptions`,
@@ -905,7 +1033,7 @@ export class MaibaoApi implements INodeType {
 						},
 						formData,
 						json: true,
-						timeout: 600000, // 音频转文本超时时间设置为 10 分钟 (600,000ms)
+						timeout: 600000,
 					});
 
 					// 构建输出
@@ -948,7 +1076,7 @@ export class MaibaoApi implements INodeType {
 					const model = this.getNodeParameter('embeddingModel', i) as string;
 					const input = this.getNodeParameter('embeddingInput', i) as string;
 
-					const responseData = await this.helpers.request({
+					const responseData = await this.helpers.httpRequest({
 						method: 'POST',
 						url: `${rawBaseUrl}/embeddings`,
 						headers: { Authorization: `Bearer ${credentials.apiKey}` },
