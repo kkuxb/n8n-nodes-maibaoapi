@@ -7,6 +7,15 @@ nul
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+.npm/
+.npm-cache/
+.npm-n8n-cache/
+.npm-n8n-cache-node22/
+.n8n-dev-server/
+.planning/
+.claude/
+.vscode/
+APIdocs/
 
 # Documentation (internal use only)
 docs/

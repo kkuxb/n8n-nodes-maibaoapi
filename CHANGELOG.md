@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-04-22
+
+### Added
+
+- 新增 `GPT-Image-2` 图像生成支持
+  - 支持文生图
+  - 支持图生图与多图参考输入
+  - 支持背景、质量、输出格式、自动/横图/竖图尺寸参数
+  - 输出结果直接返回为 Binary 图片
+- 新增 `test:gpt-image-2` 回归测试脚本
+- 新增项目本地固定版 n8n 开发运行时脚本 `scripts/dev.mjs`
+
+### Changed
+
+- 图片生成 README 重点突出 `GPT-Image-2` 的使用方式与能力
+- `npm run dev` 改为复用项目本地 `.n8n-dev-server/`，不再每次临时下载 n8n
+- `.gitignore` 补充本地开发缓存、规划目录与 API 参考资料目录
+
+### Fixed
+
+- 修复 `GPT-Image-2` 图生图请求链路
+  - 调整图像编辑 multipart 请求构造
+  - 增加图像请求调试日志，便于排查运行时问题
+- 修正 Gemini 图像生成配置，按模型发送更合适的参数
+
 ## [1.1.3] - 2026-03-09
 
 ### Changed
