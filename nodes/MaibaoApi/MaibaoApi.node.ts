@@ -15,23 +15,13 @@ import {
 	GptImageBackground,
 	GptImageOutputFormat,
 	GptImageQuality,
+	resolveGptImageSize,
 } from './GptImageUtils';
 
-function debugLog(scope: string, details: Record<string, unknown>): void {
-	if (process.env.MAIBAO_DEBUG !== '1') {
-		return;
-	}
-
-	const rendered = Object.entries(details)
-		.map(([key, value]) => {
-			if (typeof value === 'string') {
-				return `${key}=${value}`;
-			}
-			return `${key}=${JSON.stringify(value)}`;
-		})
-		.join(' ');
-
-	console.log(`[MaibaoAPI][${scope}] ${rendered}`);
+function debugLog(_scope: string, _details: Record<string, unknown>): void {
+	void _scope;
+	void _details;
+	// Disabled because n8n community nodes lint forbids direct process.env access.
 }
 
 // 图片数据接口
@@ -57,14 +47,6 @@ interface CollectedBinaryResult {
 	bufferMap: Map<string, Buffer>; // propName -> 预读取的 buffer
 }
 
-interface MultipartFormDataLike {
-	append(name: string, value: unknown, fileName?: string): void;
-}
-
-interface BlobCtorLike {
-	new(parts: Array<Buffer | string>, options?: { type?: string }): unknown;
-}
-
 interface ImagesApiResponse {
 	data?: Array<{
 		b64_json?: string;
@@ -87,17 +69,15 @@ export function buildGeminiGenerationConfig(
 	};
 }
 
-function buildNativeMultipartBody(formDataBody: Record<string, unknown>): unknown {
-	const runtime = globalThis as typeof globalThis & {
-		FormData?: new () => MultipartFormDataLike;
-		Blob?: BlobCtorLike;
-	};
-
-	if (!runtime.FormData || !runtime.Blob) {
-		throw new Error('当前运行环境不支持 multipart FormData。');
+function buildNativeMultipartBody(
+	context: IExecuteFunctions,
+	formDataBody: Record<string, unknown>,
+): FormData {
+	if (typeof FormData === 'undefined' || typeof Blob === 'undefined') {
+		throw new NodeOperationError(context.getNode(), '当前运行环境不支持 multipart FormData。');
 	}
 
-	const formData = new runtime.FormData();
+	const formData = new FormData();
 	for (const [key, value] of Object.entries(formDataBody)) {
 		if (value === undefined || value === null) {
 			continue;
@@ -113,7 +93,11 @@ function buildNativeMultipartBody(formDataBody: Record<string, unknown>): unknow
 					'options' in multipartFile
 				) {
 					const fileValue = multipartFile.value as Buffer;
-					const blob = new runtime.Blob([fileValue], {
+					const blobPart = fileValue.buffer.slice(
+						fileValue.byteOffset,
+						fileValue.byteOffset + fileValue.byteLength,
+					) as ArrayBuffer;
+					const blob = new Blob([blobPart], {
 						type: multipartFile.options.contentType,
 					});
 					formData.append(key, blob, multipartFile.options.filename);
@@ -481,7 +465,6 @@ export class MaibaoApi implements INodeType {
 		defaults: { name: 'MaibaoAPI' },
 		inputs: ['main'],
 		outputs: ['main'],
-		// eslint-disable-next-line @n8n/community-nodes/no-credential-reuse
 		credentials: [{ name: 'maibaoApi', required: true }],
 		properties: [
 			{
@@ -518,12 +501,12 @@ export class MaibaoApi implements INodeType {
 				type: 'options',
 				displayOptions: { show: { mode: ['image'] } },
 				options: [
+					{ name: 'GPT-Image-2', value: 'gpt-image-2' },
 					{ name: 'Nano Banana 2', value: 'gemini-3.1-flash-image-preview' },
 					{ name: 'Nano Banana 1 Pro', value: 'gemini-3-pro-image-preview' },
-					{ name: 'GPT-Image-2', value: 'gpt-image-2' },
 					{ name: '即梦 5.0', value: 'doubao-seedream-5-0-260128' },
 				],
-				default: 'gemini-3.1-flash-image-preview',
+				default: 'gpt-image-2',
 			},
 			{
 				displayName: '生成模型',
@@ -665,7 +648,9 @@ export class MaibaoApi implements INodeType {
 				name: 'imageSize',
 				type: 'options',
 				displayOptions: { show: { mode: ['image'], imageModel: ['gpt-image-2'] } },
+				// eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
 				options: [
+					{ name: '自定义', value: 'custom' },
 					{ name: '1024x1024（1:1）', value: '1024x1024' },
 					{ name: '1024x1536（2:3）', value: '1024x1536' },
 					{ name: '1536x1024（3:2）', value: '1536x1024' },
@@ -676,6 +661,17 @@ export class MaibaoApi implements INodeType {
 					{ name: '自动', value: 'auto' },
 				],
 				default: 'auto',
+			},
+			{
+				displayName: '自定义分辨率',
+				name: 'customImageSize',
+				type: 'string',
+				displayOptions: {
+					show: { mode: ['image'], imageModel: ['gpt-image-2'], imageSize: ['custom'] },
+				},
+				default: '',
+				placeholder: '2048x1152',
+				description: '支持 2048x1152、2048*1152、2048×1152 等格式，提交前会按 OpenAI 规则校验。',
 			},
 			{
 				displayName: '生成质量',
@@ -1017,6 +1013,8 @@ export class MaibaoApi implements INodeType {
 
 					} else if (isGptImageModel(imageModel)) {
 						const rawSize = this.getNodeParameter('imageSize', i) as string;
+						const customImageSize = this.getNodeParameter('customImageSize', i, '') as string;
+						const resolvedSize = resolveGptImageSize(rawSize, customImageSize);
 						const imageQuality = this.getNodeParameter('imageQuality', i, 'auto') as GptImageQuality;
 						const imageBackground: GptImageBackground = 'auto';
 						const imageOutputFormat = this.getNodeParameter('imageOutputFormat', i, 'png') as GptImageOutputFormat;
@@ -1038,7 +1036,7 @@ export class MaibaoApi implements INodeType {
 								mimeType: img.mimeType,
 								fileName: img.fileName,
 							})),
-							size: rawSize,
+							size: resolvedSize,
 							quality: imageQuality,
 							background: imageBackground,
 							outputFormat: imageOutputFormat,
@@ -1052,7 +1050,7 @@ export class MaibaoApi implements INodeType {
 							referenceImageCount: extractedImages.length,
 							firstImageBytes: extractedImages[0]?.buffer.length ?? null,
 							promptLength: userPrompt.length,
-							imageSize: rawSize,
+							imageSize: resolvedSize,
 							imageQuality,
 							imageBackground,
 							imageOutputFormat,
@@ -1065,7 +1063,7 @@ export class MaibaoApi implements INodeType {
 								method: 'POST',
 								url: `${rawBaseUrl}${requestConfig.endpoint}`,
 								headers: { Authorization: `Bearer ${credentials.apiKey}` },
-								body: buildNativeMultipartBody(buildGptImageMultipartFormData(requestConfig.body)) as never,
+								body: buildNativeMultipartBody(this, buildGptImageMultipartFormData(requestConfig.body)) as never,
 								timeout: 600000,
 							})) as ImagesApiResponse
 							: (await this.helpers.httpRequest({
