@@ -393,21 +393,21 @@ async function extractAudioFromBinary(
 }
 
 // Whisper API 响应中的词条目
-interface WhisperWord {
+export interface WhisperWord {
 	word: string;
 	start: number;
 	end: number;
 }
 
 // Whisper API 响应
-interface WhisperResponse {
+export interface WhisperResponse {
 	text?: string;
 	words?: WhisperWord[];
 	[key: string]: unknown;
 }
 
 // 将词级别时间戳转换为句级别时间戳
-function convertWordsToSentences(data: WhisperResponse): WhisperResponse {
+export function convertWordsToSentences(data: WhisperResponse): WhisperResponse {
 	if (!data.text || !data.words || data.words.length === 0) {
 		return data;
 	}
@@ -449,11 +449,21 @@ function convertWordsToSentences(data: WhisperResponse): WhisperResponse {
 		}
 	}
 
-	// 返回新的数据结构，包含句子而非词
+	const timeText = result
+		.map(sentence => `[${sentence.start.toFixed(1)}s - ${sentence.end.toFixed(1)}s] ${sentence.text}`)
+		.join('\n');
+
+	// 保证 time-text 紧邻且位于 sentences 之前，同时移除词级时间戳
+	const convertedData = { ...data };
+	delete convertedData.words;
+	delete convertedData['time-text'];
+	delete convertedData.sentences;
+
+	// 返回新的数据结构，兼顾可直接拖拽的文本和结构化句子
 	return {
-		...data,
+		...convertedData,
+		'time-text': timeText,
 		sentences: result,
-		words: undefined, // 移除 words 字段
 	};
 }
 
@@ -464,7 +474,7 @@ export class MaibaoApi implements INodeType {
 		icon: 'file:maibaoapi.png',
 		group: ['transform'],
 		version: 1,
-		description: '调用 MaibaoAPI 进行文字、图像、Sora 2 视频生成及向量嵌入',
+		description: '调用 MaibaoAPI 进行文字生成、图像生成及音频转文本',
 		defaults: { name: 'MaibaoAPI' },
 		inputs: ['main'],
 		outputs: ['main'],
@@ -835,7 +845,7 @@ export class MaibaoApi implements INodeType {
 				displayName: '图片属性名',
 				name: 'binaryPropertyName',
 				type: 'string',
-				default: 'data, data0, data1, data2, file, attachment',
+				default: 'data,data0,data1,data2,data3,data4,data5',
 				displayOptions: {
 					show: {
 						mode: ['text', 'image', 'video']
@@ -852,7 +862,7 @@ export class MaibaoApi implements INodeType {
 				displayName: '音频属性名',
 				name: 'audioPropertyName',
 				type: 'string',
-				default: 'data, data0, video, video0, audio, audio0',
+				default: 'data,data0,data1,data2,data3,data4,data5',
 				displayOptions: {
 					show: {
 						mode: ['audio']
@@ -899,7 +909,7 @@ export class MaibaoApi implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const binaryPropInput = this.getNodeParameter('binaryPropertyName', i, 'data, data0, data1, data2, file, attachment') as string;
+				const binaryPropInput = this.getNodeParameter('binaryPropertyName', i, 'data,data0,data1,data2,data3,data4,data5') as string;
 				const propNames = binaryPropInput.split(',').map(s => s.trim()).filter(s => s !== '');
 
 				if (mode === 'text') {
@@ -1267,7 +1277,7 @@ export class MaibaoApi implements INodeType {
 					const binarySourceMode = this.getNodeParameter('binarySourceMode', i, 'current') as 'current' | 'specified';
 					const sourceNodeNamesInput = this.getNodeParameter('sourceNodeNames', i, '') as string;
 					const specifiedNodes = sourceNodeNamesInput.split(',').map(s => s.trim()).filter(s => s !== '');
-					const audioPropInput = this.getNodeParameter('audioPropertyName', i, 'data, data0, video, video0, audio, audio0') as string;
+					const audioPropInput = this.getNodeParameter('audioPropertyName', i, 'data,data0,data1,data2,data3,data4,data5') as string;
 					const propNames = audioPropInput.split(',').map(s => s.trim()).filter(s => s !== '');
 					const language = this.getNodeParameter('audioLanguage', i, '') as string;
 					const responseFormat = this.getNodeParameter('audioResponseFormat', i, 'verbose_json') as string;
