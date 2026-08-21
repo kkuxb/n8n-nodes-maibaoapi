@@ -24,7 +24,7 @@
 		"dev": "node scripts/dev.mjs",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
-		"test": "npm run build && node --test test/audio-transcription.test.js test/dev-script-config.test.js test/gpt-image-2.test.js test/image-generation-config.test.js",
+		"test": "npm run build && node --test test/audio-transcription.test.js test/dev-script-config.test.js test/gpt-image-2.test.js test/image-generation-config.test.js test/item-linking.test.js",
 		"test:audio": "npm run build && node --test test/audio-transcription.test.js",
 		"test:gpt-image-2": "npm run build && node --test test/gpt-image-2.test.js",
 		"release": "n8n-node release"
