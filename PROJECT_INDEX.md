@@ -1,7 +1,7 @@
 # Project Index: n8n-nodes-maibaoapi
 
 **Generated:** 2026-09-01
-**Version:** 1.3.7
+**Version:** 1.3.8
 **Type:** n8n Community Node Package
 
 ---
@@ -15,7 +15,7 @@ n8n-nodes-maibaoapi/
 ├── nodes/
 │   └── MaibaoApi/
 │       ├── MaibaoApi.node.ts       # Main node implementation (713 lines)
-│       └── maibaoapi.png           # Node icon
+│       └── maibaoapi.svg           # Node icon
 ├── dist/                           # Compiled output (published to npm)
 │   ├── credentials/
 │   ├── nodes/
@@ -104,7 +104,7 @@ n8n-nodes-maibaoapi/
 ### package.json
 
 - **Name:** `n8n-nodes-maibaoapi`
-- **Version:** 1.3.7
+- **Version:** 1.3.8
 - **License:** MIT
 - **n8n API Version:** 1
 - **Node Entry:** `dist/nodes/MaibaoApi/MaibaoApi.node.js`
@@ -147,8 +147,8 @@ n8n-nodes-maibaoapi/
 
 ### CHANGELOG.md (1.3KB)
 
-- **Latest:** v1.3.7 (2026-09-01)
-- **Changes:** Make the credential API address selectable and default to `ai.maibao.chat`
+- **Latest:** v1.3.8 (2026-09-01)
+- **Changes:** Replace PNG icons with SVG and align CI/release automation with `master`
 
 ### LICENSE.md (1KB)
 
@@ -160,7 +160,7 @@ n8n-nodes-maibaoapi/
 
 ### GitHub Actions (`.github/workflows/ci.yml`)
 
-- **Triggers:** Pull requests, pushes to the `main` branch
+- **Triggers:** Pull requests, pushes to the `master` branch
 - **Node Version:** 22
 - **Steps:**
   1. Install dependencies (`npm ci`)
@@ -303,7 +303,12 @@ Or install via n8n Community Nodes UI.
 
 ## 🔄 Version History
 
-### v1.3.7 (Current)
+### v1.3.8 (Current)
+
+- Replaces node and credential PNG icons with a consistent SVG logo
+- Aligns CI and release automation with the repository's `master` branch
+
+### v1.3.7
 
 - Makes the credential API address selectable between `api.maibao.chat` and `ai.maibao.chat`
 - Defaults new credentials to `ai.maibao.chat` while preserving existing saved credentials

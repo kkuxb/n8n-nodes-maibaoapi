@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.8] - 2026-09-01
+
+### Changed
+
+- 将节点与凭证的 PNG 图标替换为保持原 Logo 视觉的 SVG，并同步更新图标引用
+- 将 CI 工作流的推送监听分支从不存在的 `main` 修正为仓库默认分支 `master`
+- 使用仓库级 release-it 配置支持从 `master` 执行完整发布流程
+- 同步 README、包元数据和项目索引至 `1.3.8`
+
 ## [1.3.7] - 2026-09-01
 
 ### Changed
@@ -171,6 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完整的类型定义
 - 自动 Base64 转换
 
+[1.3.8]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.8
 [1.3.7]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.7
 [1.3.6]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.6
 [1.3.5]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.5

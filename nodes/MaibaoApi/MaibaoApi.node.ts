@@ -482,7 +482,7 @@ export class MaibaoApi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'MaibaoAPI',
 		name: 'maibaoApi',
-		icon: 'file:maibaoapi.png',
+		icon: 'file:maibaoapi.svg',
 		group: ['transform'],
 		version: 1,
 		description: '调用 MaibaoAPI 进行文字生成、图像生成及音频转文本',

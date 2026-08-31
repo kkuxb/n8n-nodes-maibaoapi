@@ -1,6 +1,6 @@
 {
   "projectName": "n8n-nodes-maibaoapi",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "type": "n8n-community-node",
   "generated": "2026-09-01",
   "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
@@ -187,7 +187,7 @@
     },
     "CHANGELOG.md": {
       "size": "1.3KB",
-      "latestVersion": "1.3.7",
+      "latestVersion": "1.3.8",
       "date": "2026-09-01"
     },
     "LICENSE.md": {
@@ -226,8 +226,12 @@
   },
   "versionHistory": [
     {
-      "version": "1.3.7",
+	  "version": "1.3.8",
 	  "status": "current",
+	  "notes": "SVG icons and CI/release automation aligned with master"
+	},
+	{
+	  "version": "1.3.7",
 	  "notes": "Selectable credential API address; AI domain is the default"
 	},
 	{
