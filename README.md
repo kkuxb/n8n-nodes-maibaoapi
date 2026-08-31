@@ -15,7 +15,7 @@
 - **多种 Binary 来源**：可从当前节点输入、指定节点读取图片或音频；文字与图像模式还支持从 URL 获取图片。
 - **长任务超时**：所有 API 请求统一使用 600 秒超时。
 
-> 当前节点界面只开放上述三种模式。仓库中保留的视频与向量相关实现不属于 1.3.6 的公开节点功能。
+> 当前节点界面只开放上述三种模式。仓库中保留的视频与向量相关实现不属于 1.3.7 的公开节点功能。
 
 ## 安装
 
@@ -36,7 +36,8 @@ npm install n8n-nodes-maibaoapi
 ## 快速开始
 
 1. 在 n8n 凭证管理中创建 `MaibaoAPI API` 凭证。
-2. 填入从 MaibaoAPI 获取的 API Key；Base URL 已固定为 `https://api.maibao.chat/v1`，无需配置。
+2. 填入从 MaibaoAPI 获取的 API Key，并选择 API 地址：`https://api.maibao.chat` 或
+   `https://ai.maibao.chat`（默认）。
 3. 添加 `MaibaoAPI` 节点，选择文字生成、图像生成或音频转文本模式。
 4. 配置提示词或 Binary 输入并执行节点。
 
@@ -189,13 +190,13 @@ npm run dev
 
 Windows 下如遇原生依赖、`node-gyp` 或 SQLite 构建问题，请先确认当前 Shell 使用 Node.js 24。
 
-## 1.3.6 更新内容
+## 1.3.7 更新内容
 
-- 所有输出现在都会保留 n8n `pairedItem` 关联，修复多 Item 工作流中拖拽生成的
-  `$('Node').item` 表达式无法追溯上游数据的问题。
-- 文字、图像、视频、音频、向量嵌入以及 `continueOnFail` 输出统一通过同一关联逻辑，
-  不改变现有 JSON、Binary、参数或 API 请求。
-- 新增多 Item、Binary 数据和失败继续路径的回归测试，防止后续功能迭代再次遗漏关联信息。
+- 凭证中的 API 地址由隐藏固定值改为下拉选项，可选择 `https://api.maibao.chat` 或
+  `https://ai.maibao.chat`。
+- 新建凭证默认使用 `https://ai.maibao.chat`；内部继续保留 `/v1` 路径，兼容现有请求逻辑。
+- 保持 `baseUrl` 凭证字段名不变，已保存的旧凭证继续使用原地址。
+- 新增凭证配置回归测试，覆盖选项、内部地址和默认值。
 
 完整版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 

@@ -15,10 +15,20 @@ export class MaibaoApi implements ICredentialType {
 			required: true,
 		},
 		{
-			displayName: 'Base URL',
+			displayName: 'API 地址',
 			name: 'baseUrl',
-			type: 'hidden',
-			default: 'https://api.maibao.chat/v1',
+			type: 'options',
+			options: [
+				{
+					name: 'https://api.maibao.chat',
+					value: 'https://api.maibao.chat/v1',
+				},
+				{
+					name: 'https://ai.maibao.chat',
+					value: 'https://ai.maibao.chat/v1',
+				},
+			],
+			default: 'https://ai.maibao.chat/v1',
 		},
 	];
 	test: ICredentialTestRequest = {

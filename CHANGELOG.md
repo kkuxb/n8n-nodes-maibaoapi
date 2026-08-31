@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-09-01
+
+### Changed
+
+- 将凭证中的 API 地址从隐藏固定值改为下拉选项，可选择 `https://api.maibao.chat` 或
+  `https://ai.maibao.chat`
+- 新建凭证默认使用 `https://ai.maibao.chat`，内部保留 `/v1` 以兼容现有请求路径
+- 保持 `baseUrl` 字段名不变，已保存的旧凭证继续使用原地址
+- 新增凭证配置回归测试，并同步 README、包元数据和项目索引至 `1.3.7`
+
 ## [1.3.6] - 2026-08-21
 
 ### Fixed
@@ -161,6 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 完整的类型定义
 - 自动 Base64 转换
 
+[1.3.7]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.7
 [1.3.6]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.6
 [1.3.5]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.5
 [1.3.4]: https://github.com/kkuxb/n8n-nodes-maibaoapi/releases/tag/v1.3.4

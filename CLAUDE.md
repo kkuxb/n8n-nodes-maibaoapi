@@ -59,8 +59,9 @@ npm run release
 ### API Integration
 
 **Base URLs:**
-- Standard API: `https://api.maibao.chat/v1`
-- Sora API: `https://api.maibao.chat` (v1 suffix removed)
+- Default API: `https://ai.maibao.chat/v1`
+- Alternative API: `https://api.maibao.chat/v1`
+- Sora API: selected API domain with the `/v1` suffix removed
 
 **Endpoints:**
 - Text: `POST /v1/chat/completions`

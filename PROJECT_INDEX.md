@@ -1,7 +1,7 @@
 # Project Index: n8n-nodes-maibaoapi
 
-**Generated:** 2026-03-08
-**Version:** 1.3.6
+**Generated:** 2026-09-01
+**Version:** 1.3.7
 **Type:** n8n Community Node Package
 
 ---
@@ -95,7 +95,7 @@ n8n-nodes-maibaoapi/
 **Properties:**
 
 - `apiKey` - API authentication key (password field)
-- `baseUrl` - API base URL (default: `https://api.maibao.chat/v1`)
+- `baseUrl` - Selectable API base URL (`api.maibao.chat` or `ai.maibao.chat`; AI is the default)
 
 ---
 
@@ -104,7 +104,7 @@ n8n-nodes-maibaoapi/
 ### package.json
 
 - **Name:** `n8n-nodes-maibaoapi`
-- **Version:** 1.3.6
+- **Version:** 1.3.7
 - **License:** MIT
 - **n8n API Version:** 1
 - **Node Entry:** `dist/nodes/MaibaoApi/MaibaoApi.node.js`
@@ -147,8 +147,8 @@ n8n-nodes-maibaoapi/
 
 ### CHANGELOG.md (1.3KB)
 
-- **Latest:** v1.3.6 (2026-08-21)
-- **Changes:** Preserve n8n item linking for all node outputs
+- **Latest:** v1.3.7 (2026-09-01)
+- **Changes:** Make the credential API address selectable and default to `ai.maibao.chat`
 
 ### LICENSE.md (1KB)
 
@@ -160,7 +160,7 @@ n8n-nodes-maibaoapi/
 
 ### GitHub Actions (`.github/workflows/ci.yml`)
 
-- **Triggers:** Pull requests, pushes to main branch
+- **Triggers:** Pull requests, pushes to the `main` branch
 - **Node Version:** 22
 - **Steps:**
   1. Install dependencies (`npm ci`)
@@ -226,8 +226,9 @@ Or install via n8n Community Nodes UI.
 
 ### Base URLs
 
-- **Standard API:** `https://api.maibao.chat/v1`
-- **Sora API:** `https://api.maibao.chat` (v1 suffix removed)
+- **Default API:** `https://ai.maibao.chat/v1`
+- **Alternative API:** `https://api.maibao.chat/v1`
+- **Sora API:** selected API domain with the `/v1` suffix removed
 
 ### Endpoints
 
@@ -302,7 +303,12 @@ Or install via n8n Community Nodes UI.
 
 ## 🔄 Version History
 
-### v1.3.6 (Current)
+### v1.3.7 (Current)
+
+- Makes the credential API address selectable between `api.maibao.chat` and `ai.maibao.chat`
+- Defaults new credentials to `ai.maibao.chat` while preserving existing saved credentials
+
+### v1.3.6
 
 - Preserves n8n item linking for all success and `continueOnFail` outputs
 

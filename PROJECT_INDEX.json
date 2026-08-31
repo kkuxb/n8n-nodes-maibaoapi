@@ -1,8 +1,8 @@
 {
   "projectName": "n8n-nodes-maibaoapi",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "type": "n8n-community-node",
-  "generated": "2026-03-08",
+  "generated": "2026-09-01",
   "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
   "license": "MIT",
   "author": {
@@ -52,14 +52,15 @@
       "path": "credentials/MaibaoApi.credentials.ts",
       "type": "ICredentialType",
       "exports": ["MaibaoApi"],
-      "lines": 25,
+      "lines": 43,
       "properties": ["apiKey", "baseUrl"]
     }
   },
   "api": {
     "baseUrls": {
-      "standard": "https://api.maibao.chat/v1",
-      "sora": "https://api.maibao.chat"
+      "default": "https://ai.maibao.chat/v1",
+      "alternative": "https://api.maibao.chat/v1",
+      "sora": "selected API domain without /v1"
     },
     "endpoints": {
       "text": "POST /v1/chat/completions",
@@ -186,8 +187,8 @@
     },
     "CHANGELOG.md": {
       "size": "1.3KB",
-      "latestVersion": "1.3.6",
-      "date": "2026-08-21"
+      "latestVersion": "1.3.7",
+      "date": "2026-09-01"
     },
     "LICENSE.md": {
       "size": "1KB",
@@ -225,9 +226,13 @@
   },
   "versionHistory": [
     {
-      "version": "1.3.6",
-      "status": "current",
-      "notes": "Latest stable release"
+      "version": "1.3.7",
+	  "status": "current",
+	  "notes": "Selectable credential API address; AI domain is the default"
+	},
+	{
+	  "version": "1.3.6",
+	  "notes": "Preserve n8n item linking for all node outputs"
     },
     {
       "version": "1.0.0",
