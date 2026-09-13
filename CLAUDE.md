@@ -35,7 +35,7 @@ npm run dev
 npm run release
 ```
 
-When the package version is already updated, use `npm run release -- --no-increment`. The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
+When the package version is already updated, use `npm run release -- 1.4.0 --npm.allowSameVersion` (replace `1.4.0` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
 
 ## Architecture
 

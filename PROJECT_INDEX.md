@@ -215,7 +215,7 @@ npm run lint:fix        # Fix linting issues
 npm run release         # Push Git commits/tags and create GitHub Release (uses release-it)
 ```
 
-Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- --no-increment`. The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
+Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- 1.4.0 --npm.allowSameVersion` (replace `1.4.0` with the target version). The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
 
 ### Installation in n8n
 

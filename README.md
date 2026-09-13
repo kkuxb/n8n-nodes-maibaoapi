@@ -210,11 +210,11 @@ Windows 下如遇原生依赖、`node-gyp` 或 SQLite 构建问题，请先确�
 
 在 `master` 分支完成测试并提交所有修改后，使用 `npm run release` 发布 GitHub 版本。脚本会执行 lint 和构建、管理版本号、创建 Git tag、推送代码与 tag，并创建 GitHub Release；不执行 npm 发布，也不检查 npm 登录状态。
 
-如果已手动更新版本号（例如本次 `1.4.0`），使用以下命令，避免再次递增版本：
+如果已手动更新版本号（例如本次 `1.4.0`），显式指定目标版本并允许包文件保持相同版本；以后发布时将 `1.4.0` 换成实际目标版本：
 
 ```bash
-npm run release -- --no-increment --dry-run
-npm run release -- --no-increment
+npm run release -- 1.4.0 --npm.allowSameVersion --dry-run
+npm run release -- 1.4.0 --npm.allowSameVersion
 ```
 
 GitHub 发布需要配置相应认证。npm 发布由维护者在对应版本的代码上单独执行 `npm publish`，并手动完成身份验证。
