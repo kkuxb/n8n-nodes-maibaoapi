@@ -35,7 +35,7 @@ npm run dev
 npm run release
 ```
 
-When the package version is already updated, use `npm run release -- 1.4.0 --npm.allowSameVersion` (replace `1.4.0` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
+When the package version is already updated, use `npm run release -- 1.4.1 --npm.allowSameVersion` (replace `1.4.1` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
 
 ## Architecture
 
@@ -89,6 +89,10 @@ When collecting from specified nodes, the function pre-reads Binary data stored 
 - Reference image support via Binary input
 - Operations: create, remix, retrieve, download, list
 
+## GPT Image Download Recovery
+
+Use GptImageDownload for result URLs: 20 seconds per GET, at most four attempts, and 80 seconds including waits. Generation is not retried. Preserve safe diagnostics and recovery URLs in NodeOperationError.context.imageDownload and continueOnFail output. Do not log raw Axios errors or signed URLs. Whole-node retryOnFail can still repeat generation.
+
 ## Code Style
 
 - Uses tabs for indentation (tabWidth: 2)
@@ -101,7 +105,7 @@ When collecting from specified nodes, the function pre-reads Binary data stored 
 
 CI runs on GitHub Actions (.github/workflows/ci.yml):
 - Node.js 22
-- Runs `npm ci`, `npm run lint`, `npm run build`
+- Runs `npm ci`, `npm run lint`, `npm test` (includes build)
 - Triggers on pull requests and pushes to `master`
 
 Run `npm test` locally to build and execute the regression suite, including image model configuration, Base64/URL responses and node execution.
