@@ -5,7 +5,17 @@
 	"license": "MIT",
 	"homepage": "https://github.com/kkuxb/n8n-nodes-maibaoapi#readme",
 	"keywords": [
-		"n8n-community-node-package","n8n-nodes-maibaoapi","maibaoapi","maibao","文字生成","图像生成","GPT-image-2","gpt-image-2.5-sunburst","gpt-image-2.5-flare","音频转文本","nano banana2"
+		"n8n-community-node-package",
+		"n8n-nodes-maibaoapi",
+		"maibaoapi",
+		"maibao",
+		"文字生成",
+		"图像生成",
+		"GPT-image-2",
+		"gpt-image-2.5-sunburst",
+		"gpt-image-2.5-flare",
+		"音频转文本",
+		"nano banana2"
 	],
 	"author": {
 		"name": "毛淞淮",
