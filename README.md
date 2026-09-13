@@ -10,12 +10,12 @@
 ## 功能概览
 
 - **文字生成**：默认使用 `gpt-5.6-sol`，支持自定义模型 ID、系统提示词、文档文本拼接和最多 10 张图片输入。
-- **图像生成**：支持 GPT-Image-2、Nano Banana 2、Nano Banana 1 Pro 和即梦 5.0，生成结果直接输出为 n8n Binary。
+- **图像生成**：支持 GPT-Image-2.5 Sunburst、GPT-Image-2.5 Flare、GPT-Image-2 和 Nano Banana 2，生成结果直接输出为 n8n Binary。
 - **音频转文本**：固定使用 `whisper-1`，支持纯文本与句级时间戳 JSON，并额外输出可直接拖拽使用的 `time-text` 字段。
 - **多种 Binary 来源**：可从当前节点输入、指定节点读取图片或音频；文字与图像模式还支持从 URL 获取图片。
 - **长任务超时**：所有 API 请求统一使用 600 秒超时。
 
-> 当前节点界面只开放上述三种模式。仓库中保留的视频与向量相关实现不属于 1.3.8 的公开节点功能。
+> 当前节点界面只开放上述三种模式。仓库中保留的视频与向量相关实现不属于 1.4.0 的公开节点功能。
 
 ## 安装
 
@@ -82,12 +82,14 @@ data,data0,data1,data2,data3,data4,data5
 
 | 前台名称              | 请求模型 ID                          | 分辨率           | 比例    | 其他参数             |
 | ----------------- | -------------------------------- | ------------- | ----- | ---------------- |
+| GPT-Image-2.5 Sunburst | `gpt-image-2.5-sunburst-c` | 自动、预设尺寸或自定义尺寸 | 不单独设置 | 质量、背景、PNG/JPEG/WEBP |
+| GPT-Image-2.5 Flare | `gpt-image-2.5-flare-c` | 自动、预设尺寸或自定义尺寸 | 不单独设置 | 质量、背景、PNG/JPEG/WEBP |
 | GPT-Image-2       | `gpt-image-2-c`                  | 自动、预设尺寸或自定义尺寸 | 不单独设置 | 质量、PNG/JPEG/WEBP |
 | Nano Banana 2     | `gemini-3.1-flash-image-preview` | 1K / 2K / 4K  | 13 种  | —                |
-| Nano Banana 1 Pro | `gemini-3-pro-image-preview`     | 1K / 2K / 4K  | 9 种   | —                |
-| 即梦 5.0            | `doubao-seedream-5-0-260128`     | 2K / 3K       | 不单独设置 | 水印由节点请求启用        |
 
-GPT-Image-2 在节点中仍显示为 `gpt-image-2`，发送请求时自动映射为 `gpt-image-2-c`。它支持以下尺寸：
+Nano Banana 1 Pro 和即梦 5.0 已从图像生成模式移除。旧工作流如果仍选用这两个模型，执行时会提示重新选择模型，不会发送生图请求。
+
+三个 GPT Image 模型在节点中使用不带 `-c` 的模型值，发送请求时明确映射到上表 ID。默认模型仍为 GPT-Image-2。三个模型共享以下尺寸：
 
 - `auto`
 - `1024x1024`、`1024x1536`、`1536x1024`
@@ -96,6 +98,20 @@ GPT-Image-2 在节点中仍显示为 `gpt-image-2`，发送请求时自动映射
 - 符合接口约束的自定义尺寸，例如 `2048x1152`
 
 GPT-Image-2 的质量可选自动、低、中、高；输出格式可选 PNG、JPEG、WEBP。背景设置目前不在节点界面开放，固定使用自动背景。
+
+仅两个 GPT-Image-2.5 模型额外提供超高（`xhigh`）、最高（`max`）质量，以及自动、不透明、透明背景。透明背景使用官方 `background: "transparent"`，必须配合 PNG 或 WEBP，选择 JPEG 会在发送请求前报错。暂不提供压缩参数。
+
+### GPT Image 图片输出
+
+三个 GPT Image 模型均兼容 `data[0].b64_json` 和 `data[0].url`：
+
+- Base64：解码后输出至 `binary.data`。
+- URL：自动下载图片至 `binary.data`，同时在 `json.imageUrl` 输出服务商返回的完整链接。
+- 两个字段同时存在：使用 Base64 图片并保留 `json.imageUrl`，避免额外下载。
+
+图片链接可能是临时签名链接，请及时保存 Binary 图片。URL 下载不附带麦包 API Key；下载失败会明确报错并附带生图请求 ID（若服务商提供），不会自动重复生图。
+
+[OpenAI 官方参数说明](https://developers.openai.com/api/reference/resources/images/methods/generate)明确 `response_format` 的 URL/Base64 选择适用于 DALL·E 2/3，不支持 GPT Image。因此三个 GPT Image 模型均不发送此参数，也没有返回模式选择器；对 URL 的支持用于兼容服务商实际响应。`output_format` 只选择 PNG/JPEG/WEBP 文件格式。
 
 ## 音频转文本
 
@@ -178,7 +194,7 @@ npm run dev
 | `npm run build:watch`      | 持续监听 TypeScript 变更               |
 | `npm test`                 | 先构建，再运行全部 Node.js 回归测试           |
 | `npm run test:audio`       | 运行音频输出与 Binary 默认值测试             |
-| `npm run test:gpt-image-2` | 运行 GPT-Image-2 回归测试              |
+| `npm run test:gpt-image-2` | 运行 GPT Image 模型与图片响应回归测试              |
 | `npm run lint`             | 执行 n8n 社区节点规则检查                  |
 | `npm run dev`              | 启动节点热更新和本地 n8n 开发服务器             |
 
@@ -190,12 +206,26 @@ npm run dev
 
 Windows 下如遇原生依赖、`node-gyp` 或 SQLite 构建问题，请先确认当前 Shell 使用 Node.js 24。
 
-## 1.3.8 更新内容
+## 发布版本
 
-- 节点与凭证图标由 PNG 替换为保持原 Logo 视觉的 SVG，满足 n8n 社区节点图标规范。
-- CI 工作流改为监听仓库实际默认分支 `master`，主分支推送会正常触发检查。
-- 发布脚本改用仓库级 release-it 配置，在 `master` 上完成构建、lint、tag、GitHub Release
-  和 npm 发布。
+在 `master` 分支完成测试并提交所有修改后，使用 `npm run release` 发布 GitHub 版本。脚本会执行 lint 和构建、管理版本号、创建 Git tag、推送代码与 tag，并创建 GitHub Release；不执行 npm 发布，也不检查 npm 登录状态。
+
+如果已手动更新版本号（例如本次 `1.4.0`），使用以下命令，避免再次递增版本：
+
+```bash
+npm run release -- --no-increment --dry-run
+npm run release -- --no-increment
+```
+
+GitHub 发布需要配置相应认证。npm 发布由维护者在对应版本的代码上单独执行 `npm publish`，并手动完成身份验证。
+
+## 1.4.0 更新内容
+
+- 新增 GPT-Image-2.5 Sunburst 和 Flare，依次置于图像模型下拉框最前方，请求时映射到对应的 `-c` 模型 ID；默认模型仍为 GPT-Image-2。
+- 修复服务商返回图片 URL 时误报“未返回图片”的问题。三个 GPT Image 模型均兼容 Base64 和 URL，URL 自动下载到 `binary.data`，并同步输出到 `json.imageUrl`。
+- 仅两个新模型增加超高（`xhigh`）、最高（`max`）质量与背景设置；透明背景支持 PNG/WEBP，暂不开放压缩设置。
+- 根据图片实际内容识别文件格式；区分无图片、服务商业务错误和下载失败，下载失败不会重新发起生图。
+- 移除 Nano Banana 1 Pro 和即梦 5.0。升级前请将使用这两个模型的工作流改为当前支持的模型，否则执行时会提示重新选择。
 
 完整版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 

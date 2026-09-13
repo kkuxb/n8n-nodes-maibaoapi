@@ -1,8 +1,8 @@
 {
   "projectName": "n8n-nodes-maibaoapi",
-  "version": "1.3.8",
+  "version": "1.4.0",
   "type": "n8n-community-node",
-  "generated": "2026-09-01",
+  "generated": "2026-09-13",
   "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
   "license": "MIT",
   "author": {
@@ -10,11 +10,9 @@
     "email": "263674673@qq.com"
   },
   "statistics": {
-    "totalSourceLines": 736,
-    "sourceFiles": 2,
-    "configFiles": 4,
-    "documentationFiles": 4,
-    "testFiles": 0
+    "totalSourceLines": 1681,
+    "sourceFiles": 4,
+    "testFiles": 7
   },
   "structure": {
     "entryPoints": {
@@ -23,37 +21,68 @@
       "compiled": "dist/nodes/MaibaoApi/MaibaoApi.node.js"
     },
     "directories": {
-      "source": ["credentials", "nodes"],
-      "build": ["dist"],
-      "config": [".github", ".vscode"]
+      "source": [
+        "credentials",
+        "nodes"
+      ],
+      "build": [
+        "dist"
+      ],
+      "config": [
+        ".github",
+        ".vscode"
+      ]
     }
   },
   "modules": {
     "MaibaoApi": {
       "path": "nodes/MaibaoApi/MaibaoApi.node.ts",
       "type": "INodeType",
-      "exports": ["MaibaoApi"],
-      "lines": 713,
+      "exports": [
+        "MaibaoApi"
+      ],
+      "lines": 1397,
       "functions": [
         "execute",
         "collectBinaryFromNodes",
         "extractImagesFromBinary"
       ],
-      "modes": ["text", "image", "video", "embeddings"],
+      "modes": [
+        "text",
+        "image",
+        "audio"
+      ],
       "features": [
         "multimodal-input",
         "cross-node-binary-reading",
         "automatic-base64-conversion",
-        "smart-polling",
-        "storyboard-mode"
+        "gpt-image-base64-and-url-output",
+        "audio-transcription"
+      ],
+      "hiddenModes": [
+        "video",
+        "embeddings"
       ]
     },
     "MaibaoApiCredentials": {
       "path": "credentials/MaibaoApi.credentials.ts",
       "type": "ICredentialType",
-      "exports": ["MaibaoApi"],
+      "exports": [
+        "MaibaoApi"
+      ],
       "lines": 43,
-      "properties": ["apiKey", "baseUrl"]
+      "properties": [
+        "apiKey",
+        "baseUrl"
+      ]
+    },
+    "GptImageUtils": {
+      "path": "nodes/MaibaoApi/GptImageUtils.ts",
+      "purpose": "GPT Image model mapping, parameter validation and generation/edit request builders"
+    },
+    "GptImageResponse": {
+      "path": "nodes/MaibaoApi/GptImageResponse.ts",
+      "purpose": "Resolve Base64 or URL images and detect PNG/JPEG/WebP MIME types"
     }
   },
   "api": {
@@ -65,36 +94,92 @@
     "endpoints": {
       "text": "POST /v1/chat/completions",
       "imageGemini": "POST /v1beta/models/{model}:generateContent",
-      "imageDoubao": "POST /v1/images/generations",
       "videoCreate": "POST /v1/videos",
       "videoRetrieve": "GET /v1/videos/{id}",
       "videoDownload": "GET /v1/videos/{id}/content",
       "videoList": "GET /v1/videos",
-      "embeddings": "POST /v1/embeddings"
+      "embeddings": "POST /v1/embeddings",
+      "imageGptGenerate": "POST /v1/images/generations",
+      "imageGptEdit": "POST /v1/images/edits",
+      "audio": "POST /v1/audio/transcriptions"
     },
     "models": {
       "text": {
-        "default": "gemini-3.1-pro-preview",
+        "default": "gpt-5.6-sol",
         "customSupported": true
       },
       "image": [
         {
+          "id": "gpt-image-2.5-sunburst",
+          "apiId": "gpt-image-2.5-sunburst-c",
+          "name": "GPT-Image-2.5 Sunburst",
+          "quality": [
+            "auto",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "background": [
+            "auto",
+            "opaque",
+            "transparent"
+          ],
+          "outputFormats": [
+            "png",
+            "jpeg",
+            "webp"
+          ]
+        },
+        {
+          "id": "gpt-image-2.5-flare",
+          "apiId": "gpt-image-2.5-flare-c",
+          "name": "GPT-Image-2.5 Flare",
+          "quality": [
+            "auto",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "background": [
+            "auto",
+            "opaque",
+            "transparent"
+          ],
+          "outputFormats": [
+            "png",
+            "jpeg",
+            "webp"
+          ]
+        },
+        {
+          "id": "gpt-image-2",
+          "apiId": "gpt-image-2-c",
+          "name": "GPT-Image-2",
+          "quality": [
+            "auto",
+            "low",
+            "medium",
+            "high"
+          ],
+          "outputFormats": [
+            "png",
+            "jpeg",
+            "webp"
+          ]
+        },
+        {
           "id": "gemini-3.1-flash-image-preview",
           "name": "Nano Banana 2",
           "aspectRatios": 13,
-          "resolutions": ["1K", "2K", "4K"]
-        },
-        {
-          "id": "gemini-3-pro-image-preview",
-          "name": "Nano Banana 1 Pro",
-          "aspectRatios": 9,
-          "resolutions": ["1K", "2K", "4K"]
-        },
-        {
-          "id": "doubao-seedream-5-0-260128",
-          "name": "即梦 5.0",
-          "aspectRatios": 0,
-          "resolutions": ["2K", "3K"]
+          "resolutions": [
+            "1K",
+            "2K",
+            "4K"
+          ]
         }
       ],
       "video": [
@@ -110,8 +195,16 @@
       "embeddings": [
         "text-embedding-3-large",
         "text-embedding-3-small"
-      ]
-    }
+      ],
+      "imageDefault": "gpt-image-2",
+      "audio": {
+        "default": "whisper-1"
+      }
+    },
+    "hiddenModes": [
+      "video",
+      "embeddings"
+    ]
   },
   "configuration": {
     "typescript": {
@@ -148,21 +241,40 @@
   },
   "scripts": {
     "build": "n8n-node build",
-    "buildWatch": "tsc --watch",
-    "dev": "n8n-node dev",
+    "build:watch": "tsc --watch",
+    "dev": "node scripts/dev.mjs",
     "lint": "n8n-node lint",
-    "lintFix": "n8n-node lint --fix",
-    "release": "n8n-node release"
+    "lint:fix": "n8n-node lint --fix",
+    "test": "npm run build && node --test test/audio-transcription.test.js test/credentials.test.js test/dev-script-config.test.js test/gpt-image-2.test.js test/gpt-image-response.test.js test/image-generation-config.test.js test/item-linking.test.js",
+    "test:audio": "npm run build && node --test test/audio-transcription.test.js",
+    "test:gpt-image-2": "npm run build && node --test test/gpt-image-2.test.js test/gpt-image-response.test.js",
+    "release": "release-it"
+  },
+  "release": {
+    "tool": "release-it",
+    "branch": "master",
+    "gitPush": true,
+    "gitTag": true,
+    "githubRelease": true,
+    "npmPublish": false,
+    "npmAuthenticationChecks": false,
+    "manualNpmPublish": "npm publish"
   },
   "ci": {
     "platform": "github-actions",
     "nodeVersion": "22",
-    "steps": ["npm ci", "npm run lint", "npm run build"],
-    "triggers": ["pull_request", "push:main"]
+    "steps": [
+      "npm ci",
+      "npm run lint",
+      "npm run build"
+    ],
+    "triggers": [
+      "pull_request",
+      "push:master"
+    ]
   },
   "documentation": {
     "README.md": {
-      "size": "7.6KB",
       "language": "Chinese",
       "sections": [
         "Why",
@@ -174,7 +286,6 @@
       ]
     },
     "CLAUDE.md": {
-      "size": "3.8KB",
       "purpose": "Claude Code guidance",
       "sections": [
         "Project Overview",
@@ -186,20 +297,29 @@
       ]
     },
     "CHANGELOG.md": {
-      "size": "1.3KB",
-      "latestVersion": "1.3.8",
-      "date": "2026-09-01"
+      "latestVersion": "1.4.0",
+      "date": "2026-09-13"
     },
     "LICENSE.md": {
-      "size": "1KB",
       "type": "MIT"
     }
   },
   "features": {
     "binaryDataHandling": {
-      "modes": ["current", "specified"],
-      "maxImages": 3,
-      "defaultProperties": ["data", "data0", "data1", "data2", "file", "attachment"],
+      "modes": [
+        "current",
+        "specified"
+      ],
+      "maxImages": 10,
+      "defaultProperties": [
+        "data",
+        "data0",
+        "data1",
+        "data2",
+        "data3",
+        "data4",
+        "data5"
+      ],
       "preReading": true
     },
     "videoGeneration": {
@@ -209,34 +329,59 @@
         "interval": 15000,
         "timeout": 600000
       },
-      "operations": ["create", "remix", "retrieve", "download", "list"],
-      "downloadTimeout": 300000
+      "operations": [
+        "create",
+        "remix",
+        "retrieve",
+        "download",
+        "list"
+      ],
+      "downloadTimeout": 300000,
+      "publiclyAvailable": false
     },
     "multimodal": {
       "textAndImage": true,
-      "maxImagesPerRequest": 3,
+      "maxImagesPerRequest": 10,
       "automaticBase64": true
+    },
+    "imageGeneration": {
+      "responseFormats": [
+        "b64_json",
+        "url"
+      ],
+      "binaryOutput": "binary.data",
+      "urlOutput": "json.imageUrl",
+      "responseFormatSelector": false,
+      "compressionSetting": false,
+      "transparentFormats": [
+        "png",
+        "webp"
+      ],
+      "removedModels": [
+        "gemini-3-pro-image-preview",
+        "doubao-seedream-5-0-260128"
+      ],
+      "removedModelBehavior": "Fail before HTTP request; reselect a supported model"
     }
-  },
-  "tokenEfficiency": {
-    "indexSize": "~3KB",
-    "fullCodebaseTokens": "~15000",
-    "indexTokens": "~2000",
-    "savingsPercentage": 87
   },
   "versionHistory": [
     {
-	  "version": "1.3.8",
-	  "status": "current",
-	  "notes": "SVG icons and CI/release automation aligned with master"
-	},
-	{
-	  "version": "1.3.7",
-	  "notes": "Selectable credential API address; AI domain is the default"
-	},
-	{
-	  "version": "1.3.6",
-	  "notes": "Preserve n8n item linking for all node outputs"
+      "version": "1.4.0",
+      "date": "2026-09-13",
+      "status": "current",
+      "notes": "GPT Image 2.5 models and quality/background controls; Base64/URL response fix; remove Nano Banana 1 Pro and Jimeng 5.0"
+    },
+    {
+      "version": "1.3.8",
+      "notes": "SVG icons and CI/release automation aligned with master"
+    },
+    {
+      "version": "1.3.7",
+      "notes": "Selectable credential API address; AI domain is the default"
+    },
+    {
+      "version": "1.3.6",
+      "notes": "Preserve n8n item linking for all node outputs"
     },
     {
       "version": "1.0.0",
@@ -250,13 +395,16 @@
     }
   ],
   "keywords": [
+    "n8n-community-node-package",
     "n8n-nodes-maibaoapi",
     "maibaoapi",
     "maibao",
     "文字生成",
     "图像生成",
-    "Sora 2 视频生成",
-    "向量嵌入",
-    "nano banana"
+    "GPT-image-2",
+    "gpt-image-2.5-sunburst",
+    "gpt-image-2.5-flare",
+    "音频转文本",
+    "nano banana2"
   ]
 }
