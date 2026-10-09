@@ -8,7 +8,7 @@ This is an n8n community node package that provides integration with MaibaoAPI (
 
 **Key Features:**
 - Text generation with multimodal support (text + images)
-- Image generation (GPT-Image-2.5 Sunburst, GPT-Image-2.5 Flare, GPT-Image-2, Nano Banana 2)
+- Image generation (GPT-Image-2.5 Sunburst, GPT-Image-2.5 Flare, GPT-Image-2, Nano Banana 2.1)
 - Audio transcription (Whisper-1)
 - GPT Image Base64/URL responses converted to Binary, with original URLs in `json.imageUrl`
 - Cross-node Binary data reading
@@ -35,7 +35,7 @@ npm run dev
 npm run release
 ```
 
-When the package version is already updated, use `npm run release -- 1.4.1 --npm.allowSameVersion` (replace `1.4.1` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
+When the package version is already updated, use `npm run release -- 1.4.2 --npm.allowSameVersion` (replace `1.4.2` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
 
 ## Architecture
 
@@ -71,6 +71,8 @@ When the package version is already updated, use `npm run release -- 1.4.1 --npm
 - Audio: `POST /v1/audio/transcriptions`
 - Video (hidden): `POST /v1/videos`, `GET /v1/videos/{id}`, etc.
 - Embeddings (hidden): `POST /v1/embeddings`
+
+GPT Image generation and edit requests always send `response_format: 'b64_json'`; URL fallback remains supported. Nano Banana 2.1 uses `gemini-nano-banana-2.1-preview`, 14 aspect ratios including 21:9, and 1K/2K/4K; old Nano Banana 2 workflows must reselect the model.
 
 GPT Image model values map to their corresponding `-c` provider IDs. Only the two 2.5 models expose `xhigh`/`max` quality and background settings. Transparent backgrounds require PNG or WebP. Nano Banana 1 Pro and Jimeng 5.0 have been removed; existing workflows using them fail before a generation request and must reselect a model.
 
