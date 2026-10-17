@@ -816,7 +816,7 @@ export class MaibaoApi implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 		const credentials = await this.getCredentials('maibaoApi');
 		const mode = this.getNodeParameter('mode', 0) as string;
-		const rawBaseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
+		const rawBaseUrl = 'https://ai.maibao.chat/v1';
 		const soraBaseUrl = rawBaseUrl.replace(/\/v1$/, '');
 
 		for (let i = 0; i < items.length; i++) {

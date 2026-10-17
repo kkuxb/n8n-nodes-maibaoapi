@@ -1,8 +1,8 @@
 {
   "projectName": "n8n-nodes-maibaoapi",
-  "version": "1.4.2",
+  "version": "1.4.4",
   "type": "n8n-community-node",
-  "generated": "2026-10-09",
+  "generated": "2026-10-17",
   "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
   "license": "MIT",
   "author": {
@@ -70,10 +70,9 @@
       "exports": [
         "MaibaoApi"
       ],
-      "lines": 43,
+      "lines": 27,
       "properties": [
-        "apiKey",
-        "baseUrl"
+        "apiKey"
       ]
     },
     "GptImageUtils": {
@@ -95,9 +94,8 @@
   },
   "api": {
     "baseUrls": {
-      "default": "https://ai.maibao.chat/v1",
-      "alternative": "https://api.maibao.chat/v1",
-      "sora": "selected API domain without /v1"
+      "fixed": "https://ai.maibao.chat/v1",
+      "sora": "https://ai.maibao.chat"
     },
     "endpoints": {
       "text": "POST /v1/chat/completions",
@@ -308,8 +306,8 @@
       ]
     },
     "CHANGELOG.md": {
-      "latestVersion": "1.4.2",
-      "date": "2026-10-09"
+      "latestVersion": "1.4.4",
+      "date": "2026-10-17"
     },
     "LICENSE.md": {
       "type": "MIT"
@@ -387,9 +385,19 @@
   },
   "versionHistory": [
     {
+      "version": "1.4.4",
+      "date": "2026-10-17",
+      "status": "current",
+      "notes": "API Key-only credentials; credential testing and all API requests use the fixed AI domain, ignoring saved credential URLs"
+    },
+    {
+      "version": "1.4.3",
+      "date": "2026-10-09",
+      "notes": "Segmented M4A transcription without FFmpeg; timestamped Markdown text output; default text model claude-sonnet-5-5"
+    },
+    {
       "version": "1.4.2",
       "date": "2026-10-09",
-      "status": "current",
       "notes": "GPT Image defaults to Base64; Nano Banana 2.1 with 21:9 and correct image MIME; old Nano Banana workflows must reselect the model"
     },
     {

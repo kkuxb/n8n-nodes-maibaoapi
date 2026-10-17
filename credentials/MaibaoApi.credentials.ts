@@ -14,26 +14,10 @@ export class MaibaoApi implements ICredentialType {
 			default: '',
 			required: true,
 		},
-		{
-			displayName: 'API 地址',
-			name: 'baseUrl',
-			type: 'options',
-			options: [
-				{
-					name: 'https://api.maibao.chat',
-					value: 'https://api.maibao.chat/v1',
-				},
-				{
-					name: 'https://ai.maibao.chat',
-					value: 'https://ai.maibao.chat/v1',
-				},
-			],
-			default: 'https://ai.maibao.chat/v1',
-		},
 	];
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{$credentials.baseUrl}}',
+			baseURL: 'https://ai.maibao.chat/v1',
 			url: '/models',
 			headers: {
 				Authorization: '=Bearer {{$credentials.apiKey}}',

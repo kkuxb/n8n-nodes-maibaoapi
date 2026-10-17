@@ -36,8 +36,7 @@ npm install n8n-nodes-maibaoapi
 ## 快速开始
 
 1. 在 n8n 凭证管理中创建 `MaibaoAPI API` 凭证。
-2. 填入从 MaibaoAPI 获取的 API Key，并选择 API 地址：`https://api.maibao.chat` 或
-   `https://ai.maibao.chat`（默认）。
+2. 填入从 MaibaoAPI 获取的 API Key。API 地址固定为 `https://ai.maibao.chat`，无需填写；已保存的旧凭证也自动使用该地址。
 3. 添加 `MaibaoAPI` 节点，选择文字生成、图像生成或音频转文本模式。
 4. 配置提示词或 Binary 输入并执行节点。
 
@@ -209,18 +208,24 @@ Windows 下如遇原生依赖、`node-gyp` 或 SQLite 构建问题，请先确�
 
 ## 发布版本
 
-在 `master` 分支完成测试、提交并推送修改，确认远端 CI 通过后，使用 `npm run release` 发布 GitHub 版本。脚本会执行 lint 和构建、管理版本号、创建 Git tag、推送代码与 tag，并创建 GitHub Release；不执行 npm 发布，也不检查 npm 登录状态。
+在 `master` 分支完成 lint、测试及版本文档更新并提交后，使用 `npm run release` 发布 GitHub 版本。脚本会执行 lint 和构建、管理版本号、创建 Git tag、推送代码与 tag，并创建 GitHub Release；推送后确认远端 CI 通过。不执行 npm 发布，也不检查 npm 登录状态。
 
-如果已手动更新版本号（例如本次 `1.4.3`），显式指定目标版本并允许包文件保持相同版本；以后发布时将 `1.4.3` 换成实际目标版本：
+如果已手动更新版本号（例如本次 `1.4.4`），显式指定目标版本并允许包文件保持相同版本；以后发布时将 `1.4.4` 换成实际目标版本：
 
 ```bash
-npm run release -- 1.4.3 --npm.allowSameVersion --dry-run
-npm run release -- 1.4.3 --npm.allowSameVersion
+npm run release -- 1.4.4 --npm.allowSameVersion --dry-run
+npm run release -- 1.4.4 --npm.allowSameVersion
 ```
 
 GitHub 发布需要配置相应认证。npm 发布由维护者在对应版本的代码上单独执行 `npm publish`，并手动完成身份验证。
 
-## 1.4.3 更新内容
+## 1.4.4 更新内容
+
+- 创建或编辑凭证时仅需填写 API Key，移除 API 地址栏和地址选项。
+- 凭证测试及全部节点 API 请求固定使用 `https://ai.maibao.chat`，停止使用已不受支持的旧地址。
+- 已保存的旧凭证自动使用新地址，无需重新创建；文字、图像和音频功能保持不变。
+
+### 1.4.3 更新回顾
 
 - 音频转文本采用纯 JavaScript 提取 AAC、封装及切分 M4A，无需安装 FFmpeg；约 30 秒分段、三路并发，支持失败片段重试与取消。
 - 模式名称保持不变，隐藏音频语言和输出格式，仅输出带秒级全片时间戳的 Markdown `text`；完整保留旧 Whisper 实现，便于维护者恢复。

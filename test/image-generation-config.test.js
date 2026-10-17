@@ -61,7 +61,7 @@ test('Nano Banana 2.1 generation and reference editing use the new endpoint and 
 		], references);
 		assert.equal(result.calls.length, 1);
 		const request = result.calls[0];
-		assert.equal(request.url, 'https://api.example.test/v1beta/models/gemini-nano-banana-2.1-preview:generateContent');
+		assert.equal(request.url, 'https://ai.maibao.chat/v1beta/models/gemini-nano-banana-2.1-preview:generateContent');
 		assert.equal(request.method, 'POST');
 		assert.deepEqual(request.body.generationConfig, { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '21:9', imageSize: '2K' } });
 		assert.equal(request.body.contents[0].parts.length, references ? 2 : 1);

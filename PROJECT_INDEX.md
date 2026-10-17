@@ -1,7 +1,7 @@
 # Project Index: n8n-nodes-maibaoapi
 
-**Generated:** 2026-10-09
-**Version:** 1.4.2
+**Generated:** 2026-10-17
+**Version:** 1.4.4
 **Type:** n8n Community Node Package
 
 ---
@@ -98,7 +98,8 @@ Video and embeddings code remains in the repository but is hidden from the publi
 **Properties:**
 
 - `apiKey` - API authentication key (password field)
-- `baseUrl` - Selectable API base URL (`api.maibao.chat` or `ai.maibao.chat`; AI is the default)
+
+API requests and credential testing use the fixed URL `https://ai.maibao.chat/v1`; saved credential URLs are ignored.
 
 ---
 
@@ -107,7 +108,7 @@ Video and embeddings code remains in the repository but is hidden from the publi
 ### package.json
 
 - **Name:** `n8n-nodes-maibaoapi`
-- **Version:** 1.4.2
+- **Version:** 1.4.4
 - **License:** MIT
 - **n8n API Version:** 1
 - **Node Entry:** `dist/nodes/MaibaoApi/MaibaoApi.node.js`
@@ -150,8 +151,8 @@ Video and embeddings code remains in the repository but is hidden from the publi
 
 ### CHANGELOG.md
 
-- **Latest:** v1.4.2 (2026-10-09)
-- **Changes:** GPT Image defaults to Base64; Nano Banana 2.1 with 21:9 and correct image MIME
+- **Latest:** v1.4.4 (2026-10-17)
+- **Changes:** API Key-only credentials; all API requests use the fixed AI domain, including existing credentials
 
 ### LICENSE.md
 
@@ -215,7 +216,7 @@ npm run lint:fix        # Fix linting issues
 npm run release         # Push Git commits/tags and create GitHub Release (uses release-it)
 ```
 
-Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- 1.4.2 --npm.allowSameVersion` (replace `1.4.2` with the target version). The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
+Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- 1.4.4 --npm.allowSameVersion` (replace `1.4.4` with the target version). The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
 
 ### Installation in n8n
 
@@ -231,9 +232,8 @@ Or install via n8n Community Nodes UI.
 
 ### Base URLs
 
-- **Default API:** `https://ai.maibao.chat/v1`
-- **Alternative API:** `https://api.maibao.chat/v1`
-- **Sora API:** selected API domain with the `/v1` suffix removed
+- **Fixed API:** `https://ai.maibao.chat/v1`
+- **Sora API:** `https://ai.maibao.chat`
 
 ### Endpoints
 
@@ -314,7 +314,19 @@ Nano Banana 1 Pro and Jimeng 5.0 were removed. Existing workflows using them mus
 
 ## 🔄 Version History
 
-### v1.4.2 (Current)
+### v1.4.4 (Current)
+
+- Credentials require only an API Key; removes the API address selector
+- Credential testing and all API requests use `https://ai.maibao.chat`, ignoring saved credential URLs
+- Existing credentials continue working without recreation
+
+### v1.4.3
+
+- Adds segmented M4A transcription without FFmpeg, with retries and cancellation
+- Audio outputs timestamped Markdown in `text`; hides legacy language and format controls
+- Changes the default text model to `claude-sonnet-5-5`
+
+### v1.4.2
 
 - Requests Base64 for GPT Image generation and edits, retaining URL fallback
 - Replaces Nano Banana 2 with Nano Banana 2.1 and adds 21:9
@@ -356,5 +368,5 @@ Nano Banana 1 Pro and Jimeng 5.0 were removed. Existing workflows using them mus
 ---
 
 **Index Status:** ✅ Complete
-**Last Updated:** 2026-10-09
+**Last Updated:** 2026-10-17
 **Maintainer:** 毛淞淮 (maosonghuai)

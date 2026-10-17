@@ -52,7 +52,7 @@ for (const model of GPT_IMAGE_MODELS) {
 			assert.equal(result.error, undefined);
 			assert.equal(result.calls.length, 2);
 			const [post, get] = result.calls;
-			assert.equal(post.url, `https://api.example.test/v1/images/${references ? 'edits' : 'generations'}`);
+			assert.equal(post.url, `https://ai.maibao.chat/v1/images/${references ? 'edits' : 'generations'}`);
 			assert.equal(references ? post.body.get('model') : post.body.model, `${model}-c`);
 			assert.equal(references ? post.body.get('response_format') : post.body.response_format, 'b64_json');
 			assert.equal(get.url, imageUrl);

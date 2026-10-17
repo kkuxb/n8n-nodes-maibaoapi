@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an n8n community node package that provides integration with MaibaoAPI (https://api.maibao.chat). It enables users to call AI models through n8n workflows without manually configuring HTTP Request nodes.
+This is an n8n community node package that provides integration with MaibaoAPI (https://ai.maibao.chat). It enables users to call AI models through n8n workflows without manually configuring HTTP Request nodes.
 
 **Key Features:**
 - Text generation with multimodal support (text + images)
@@ -35,13 +35,13 @@ npm run dev
 npm run release
 ```
 
-When the package version is already updated, use `npm run release -- 1.4.2 --npm.allowSameVersion` (replace `1.4.2` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
+When the package version is already updated, use `npm run release -- 1.4.4 --npm.allowSameVersion` (replace `1.4.4` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
 
 ## Architecture
 
 ### File Structure
 
-- `credentials/MaibaoApi.credentials.ts` - Credential definition (API Key + Base URL)
+- `credentials/MaibaoApi.credentials.ts` - Credential definition (API Key only; fixed API URL)
 - `nodes/MaibaoApi/MaibaoApi.node.ts` - Main node implementation
 - `dist/` - Compiled output (published to npm)
 
@@ -60,9 +60,8 @@ When the package version is already updated, use `npm run release -- 1.4.2 --npm
 ### API Integration
 
 **Base URLs:**
-- Default API: `https://ai.maibao.chat/v1`
-- Alternative API: `https://api.maibao.chat/v1`
-- Sora API: selected API domain with the `/v1` suffix removed
+- Fixed API: `https://ai.maibao.chat/v1` (saved credential URLs are ignored)
+- Sora API: `https://ai.maibao.chat`
 
 **Endpoints:**
 - Text: `POST /v1/chat/completions`
