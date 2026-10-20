@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.5] - 2026-10-20
+
+### Fixed
+
+- 音频解析改用完整 AAC 音频包时间表计算时长，兼容 MP4/M4A 中文件头声明时长偏短、偏长或未知的情况，修复部分小红书 HE-AAC 视频因编码延迟触发 `Audio edit exceeds media duration` 的问题。
+- 保留编码延迟、实际裁剪和全片时间戳；末尾少量包级/时基舍入偏差自动截到实际终点，仍拒绝缺失音频数据、无效时间表和超出可用音频的裁剪范围。
+- 音频解析错误按封装、音轨、编码/加密、裁剪或文件完整性说明原因；入口格式提示与当前 MP4/M4A 支持范围一致，旧 Whisper 后端保留原格式列表。
+- 保持现有安装方式、纯 JavaScript 内存处理及 Markdown `text` 输出，无新增运行时依赖。
+
 ## [1.4.4] - 2026-10-17
 
 ### Changed

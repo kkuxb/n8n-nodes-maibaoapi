@@ -1,8 +1,8 @@
 {
   "projectName": "n8n-nodes-maibaoapi",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "type": "n8n-community-node",
-  "generated": "2026-10-17",
+  "generated": "2026-10-20",
   "repository": "https://github.com/kkuxb/n8n-nodes-maibaoapi.git",
   "license": "MIT",
   "author": {
@@ -10,9 +10,9 @@
     "email": "263674673@qq.com"
   },
   "statistics": {
-    "totalSourceLines": 2064,
-    "sourceFiles": 6,
-    "testFiles": 8
+    "totalSourceLines": 3030,
+    "sourceFiles": 14,
+    "testFiles": 12
   },
   "structure": {
     "entryPoints": {
@@ -41,7 +41,7 @@
       "exports": [
         "MaibaoApi"
       ],
-      "lines": 1440,
+      "lines": 1275,
       "functions": [
         "execute",
         "collectBinaryFromNodes",
@@ -90,6 +90,10 @@
     "GptImageDiagnostics": {
       "path": "nodes/MaibaoApi/GptImageDiagnostics.ts",
       "purpose": "Sanitized, serializable image failure diagnostics"
+    },
+    "AudioMedia": {
+      "path": "nodes/MaibaoApi/audio/M4aMedia.ts",
+      "purpose": "Pure JavaScript AAC extraction, packet-derived duration, presentation trims and M4A chunking without runtime dependencies"
     }
   },
   "api": {
@@ -107,11 +111,12 @@
       "embeddings": "POST /v1/embeddings",
       "imageGptGenerate": "POST /v1/images/generations",
       "imageGptEdit": "POST /v1/images/edits",
-      "audio": "POST /v1/audio/transcriptions"
+      "audio": "POST /v1/chat/completions",
+      "audioLegacy": "POST /v1/audio/transcriptions"
     },
     "models": {
       "text": {
-        "default": "gpt-5.6-sol",
+        "default": "claude-sonnet-5-5",
         "customSupported": true
       },
       "image": [
@@ -207,7 +212,8 @@
       ],
       "imageDefault": "gpt-image-2",
       "audio": {
-        "default": "whisper-1"
+        "default": "qwen3.5-omni-flash",
+        "legacy": "whisper-1"
       }
     },
     "hiddenModes": [
@@ -254,8 +260,8 @@
     "dev": "node scripts/dev.mjs",
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
-    "test": "npm run build && node --test test/audio-transcription.test.js test/credentials.test.js test/dev-script-config.test.js test/gpt-image-2.test.js test/gpt-image-response.test.js test/gpt-image-download.test.js test/image-generation-config.test.js test/item-linking.test.js",
-    "test:audio": "npm run build && node --test test/audio-transcription.test.js",
+    "test": "npm run build && node --test test/*.test.js",
+    "test:audio": "npm run build && node --test test/audio-*.test.js",
     "test:gpt-image-2": "npm run build && node --test test/gpt-image-2.test.js test/gpt-image-response.test.js test/gpt-image-download.test.js",
     "release": "release-it"
   },
@@ -306,8 +312,8 @@
       ]
     },
     "CHANGELOG.md": {
-      "latestVersion": "1.4.4",
-      "date": "2026-10-17"
+      "latestVersion": "1.4.5",
+      "date": "2026-10-20"
     },
     "LICENSE.md": {
       "type": "MIT"
@@ -381,13 +387,43 @@
         "retryWholeNode": false
       },
       "gptImageRequestFormat": "b64_json"
+    },
+    "audioTranscription": {
+      "backend": "omni",
+      "containers": [
+        "mp4",
+        "m4a"
+      ],
+      "codecs": [
+        "AAC-LC",
+        "HE-AAC"
+      ],
+      "timingSource": "complete stts packet timeline",
+      "preservePrimingAndTrims": true,
+      "tailRounding": "at most one final packet or one movie-timebase unit",
+      "maxInputBytes": 134217728,
+      "maxSamples": 500000,
+      "output": "timestamped Markdown text",
+      "runtimeDependencies": [],
+      "unsupported": [
+        "fragmented MP4",
+        "non-AAC codecs",
+        "multiple audio tracks",
+        "complex edit lists",
+        "encrypted audio"
+      ]
     }
   },
   "versionHistory": [
     {
+      "version": "1.4.5",
+      "date": "2026-10-20",
+      "status": "current",
+      "notes": "Recover inaccurate/unknown AAC duration from packet timing; preserve edits, improve input diagnostics and keep dependency-free installation"
+    },
+    {
       "version": "1.4.4",
       "date": "2026-10-17",
-      "status": "current",
       "notes": "API Key-only credentials; credential testing and all API requests use the fixed AI domain, ignoring saved credential URLs"
     },
     {

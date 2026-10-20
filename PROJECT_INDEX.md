@@ -1,7 +1,7 @@
 # Project Index: n8n-nodes-maibaoapi
 
-**Generated:** 2026-10-17
-**Version:** 1.4.4
+**Generated:** 2026-10-20
+**Version:** 1.4.5
 **Type:** n8n Community Node Package
 
 ---
@@ -35,7 +35,7 @@ n8n-nodes-maibaoapi/
 └── LICENSE.md                      # MIT License
 ```
 
-**Total Source Code:** 2064 lines across 6 TypeScript files
+**Total Source Code:** 3030 lines across 14 TypeScript files
 
 ---
 
@@ -108,7 +108,7 @@ API requests and credential testing use the fixed URL `https://ai.maibao.chat/v1
 ### package.json
 
 - **Name:** `n8n-nodes-maibaoapi`
-- **Version:** 1.4.4
+- **Version:** 1.4.5
 - **License:** MIT
 - **n8n API Version:** 1
 - **Node Entry:** `dist/nodes/MaibaoApi/MaibaoApi.node.js`
@@ -151,8 +151,8 @@ API requests and credential testing use the fixed URL `https://ai.maibao.chat/v1
 
 ### CHANGELOG.md
 
-- **Latest:** v1.4.4 (2026-10-17)
-- **Changes:** API Key-only credentials; all API requests use the fixed AI domain, including existing credentials
+- **Latest:** v1.4.5 (2026-10-20)
+- **Changes:** Recover AAC timing from complete packet tables; preserve priming/trims; improve audio input diagnostics without adding dependencies
 
 ### LICENSE.md
 
@@ -171,7 +171,7 @@ API requests and credential testing use the fixed URL `https://ai.maibao.chat/v1
   2. Run linter (`npm run lint`)
   3. Build and run regression tests (`npm test`)
 
-**Regression tests:** `npm test` builds and runs eight test files, including GPT Image model configuration, response handling and node execution. CI runs lint and the full build/test suite.
+**Regression tests:** `npm test` builds and runs 12 test files, including GPT Image model configuration, response handling and node execution. CI runs lint and the full build/test suite.
 
 ---
 
@@ -216,7 +216,7 @@ npm run lint:fix        # Fix linting issues
 npm run release         # Push Git commits/tags and create GitHub Release (uses release-it)
 ```
 
-Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- 1.4.4 --npm.allowSameVersion` (replace `1.4.4` with the target version). The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
+Automatic npm publishing and npm authentication checks are disabled. If the package version has already been updated, use `npm run release -- 1.4.5 --npm.allowSameVersion` (replace `1.4.5` with the target version). The maintainer publishes to npm separately with `npm publish` and completes authentication manually.
 
 ### Installation in n8n
 
@@ -240,7 +240,7 @@ Or install via n8n Community Nodes UI.
 - **Text:** `POST /v1/chat/completions`
 - **Image (Gemini):** `POST /v1beta/models/{model}:generateContent`
 - **Image (GPT Image):** `POST /v1/images/generations` or multipart `POST /v1/images/edits`
-- **Audio:** `POST /v1/audio/transcriptions`
+- **Audio:** `POST /v1/chat/completions` (active Omni); `POST /v1/audio/transcriptions` (legacy Whisper)
 The following endpoints belong to hidden modes:
 
 - **Video Create:** `POST /v1/videos`
@@ -253,7 +253,7 @@ The following endpoints belong to hidden modes:
 
 **Text Generation:**
 
-- `gpt-5.6-sol` (default)
+- `claude-sonnet-5-5` (default)
 - Custom model IDs supported
 
 **Image Generation (dropdown order):**
@@ -267,7 +267,7 @@ Only the two 2.5 models expose 超高 (`xhigh`), 最高 (`max`) and background s
 
 Nano Banana 1 Pro and Jimeng 5.0 were removed. Existing workflows using them must select a supported model; otherwise execution fails before sending a generation request.
 
-**Audio Transcription:** `whisper-1`
+**Audio Transcription:** `qwen3.5-omni-flash`; legacy `whisper-1` retained. Pure JavaScript MP4/M4A AAC extraction uses packet-derived duration since 1.4.5 and returns timestamped Markdown `text`.
 
 **Video Generation (hidden):**
 
@@ -314,7 +314,14 @@ Nano Banana 1 Pro and Jimeng 5.0 were removed. Existing workflows using them mus
 
 ## 🔄 Version History
 
-### v1.4.4 (Current)
+### v1.4.5 (Current)
+
+- Derives audio duration from complete AAC packet timing, tolerating inaccurate or unknown declared duration
+- Preserves encoder delay, trims and global timestamps; clamps small tail rounding and rejects unavailable audio
+- Reports specific media parsing failures and aligns active input formats to MP4/M4A
+- Retains the same installation method and Markdown output without FFmpeg or new runtime dependencies
+
+### v1.4.4
 
 - Credentials require only an API Key; removes the API address selector
 - Credential testing and all API requests use `https://ai.maibao.chat`, ignoring saved credential URLs
@@ -368,5 +375,5 @@ Nano Banana 1 Pro and Jimeng 5.0 were removed. Existing workflows using them mus
 ---
 
 **Index Status:** ✅ Complete
-**Last Updated:** 2026-10-17
+**Last Updated:** 2026-10-20
 **Maintainer:** 毛淞淮 (maosonghuai)
