@@ -10,6 +10,7 @@ This is an n8n community node package that provides integration with MaibaoAPI (
 - Text generation with multimodal support (text + images)
 - Image generation (GPT-Image-2.5 Sunburst, GPT-Image-2.5 Flare, GPT-Image-2, Nano Banana 2.1)
 - Audio transcription (qwen3.5-omni-flash; legacy Whisper-1 implementation retained)
+- Full-video understanding (qwen3.5-omni-plus; public MP4 URL input, timestamped visuals and speech)
 - GPT Image Base64/URL responses converted to Binary, with original URLs in `json.imageUrl`
 - Cross-node Binary data reading
 
@@ -35,7 +36,7 @@ npm run dev
 npm run release
 ```
 
-When the package version is already updated, use `npm run release -- 1.4.5 --npm.allowSameVersion` (replace `1.4.5` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
+When the package version is already updated, use `npm run release -- 1.5.0 --npm.allowSameVersion` (replace `1.5.0` with the target version). The release configuration disables npm publishing and npm authentication checks; the maintainer runs `npm publish` separately.
 
 ## Architecture
 
@@ -49,7 +50,7 @@ When the package version is already updated, use `npm run release -- 1.4.5 --npm
 
 **MaibaoApi Node** (`nodes/MaibaoApi/MaibaoApi.node.ts`):
 - Implements `INodeType` interface from n8n-workflow
-- Exposes 3 modes: text, image, audio; video and embeddings remain hidden
+- Exposes 4 modes: text, image, audio, videoUnderstanding; Sora video generation and embeddings remain hidden
 - Handles Binary data collection from current or specified nodes
 - Automatic image extraction and Base64 conversion
 
@@ -68,6 +69,7 @@ When the package version is already updated, use `npm run release -- 1.4.5 --npm
 - Image (Gemini): `POST /v1beta/models/{model}:generateContent`
 - Image (GPT Image): `POST /v1/images/generations`, multipart `POST /v1/images/edits`
 - Audio: `POST /v1/chat/completions` (active Omni backend); legacy Whisper uses `POST /v1/audio/transcriptions`
+- Video understanding: `POST /v1/chat/completions` (fixed qwen3.5-omni-plus, full video_url input)
 - Video (hidden): `POST /v1/videos`, `GET /v1/videos/{id}`, etc.
 - Embeddings (hidden): `POST /v1/embeddings`
 
@@ -84,6 +86,15 @@ The node supports two Binary source modes:
 2. **Specified nodes** - Uses `context.getWorkflowDataProxy()` to access upstream nodes by name, pre-reads file system binaries using `getBinaryStream()` and `binaryToBuffer()`
 
 When collecting from specified nodes, the function pre-reads Binary data stored in the file system (identified by `binaryData.id`) to avoid context issues when accessing cross-node data.
+
+### Video Understanding
+
+- URL-only public HTTP(S) ordinary MP4 input, arbitrary domains; no Binary/Base64 or local full-file download.
+- Bounded Range reads obtain Content-Range file size and moov/mvhd duration. Maximum input: one hour / 2GB, matching official model specifications; metadata at most 8MiB.
+- Validate each redirect (at most five). URL checks reject local/private IP literals and local hostname forms; DNS/connection policies belong to n8n and the deployment network.
+- Submit the full URL once with fixed five-second intervals; max_tokens=65536, ten-minute execution budget, cancellation and no paid-request retries or fallback.
+- Require complete SSE stop/DONE and validate every interval before rendering timestamped visual/speech Markdown in json.text. Silent videos need no audio track.
+- Eleven-minute model validation is available; one-hour fine-grained quality is unverified. Reject truncated/partial output and preserve item pairing.
 
 ### Video Generation (Sora 2, hidden)
 

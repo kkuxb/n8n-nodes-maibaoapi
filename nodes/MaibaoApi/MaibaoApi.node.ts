@@ -2,6 +2,8 @@ import { ACTIVE_AUDIO_BACKEND } from './audio/AudioBackend';
 import { audioProperties } from './audio/AudioProperties';
 import { transcribeWhisper } from './audio/WhisperTranscription';
 import { transcribeOmni } from './audio/OmniTranscription';
+import { videoUnderstandingProperties } from './video/VideoProperties';
+import { understandVideo } from './video/VideoUnderstanding';
 export { convertWordsToSentences } from './audio/WhisperTranscription';
 import {
 	IExecuteFunctions,
@@ -416,7 +418,7 @@ export class MaibaoApi implements INodeType {
 		icon: 'file:maibaoapi.svg',
 		group: ['transform'],
 		version: 1,
-		description: '调用 MaibaoAPI 进行文字生成、图像生成及音频转文本',
+		description: '调用 MaibaoAPI 进行文字生成、图像生成、音频转文本及视频理解',
 		defaults: { name: 'MaibaoAPI' },
 		inputs: ['main'],
 		outputs: ['main'],
@@ -432,6 +434,7 @@ export class MaibaoApi implements INodeType {
 					{ name: '文字生成', value: 'text' },
 					// { name: '向量嵌入 (Embeddings)', value: 'embeddings' },
 					{ name: '音频转文本', value: 'audio' },
+					{ name: '视频理解', value: 'videoUnderstanding' },
 				],
 				default: 'text',
 			},
@@ -758,6 +761,7 @@ export class MaibaoApi implements INodeType {
 				placeholder: 'HTTP Request, Read File, Code',
 				displayOptions: {
 					show: {
+						mode: ['text', 'image', 'video', 'audio'],
 						binarySourceMode: ['specified']
 					}
 				},
@@ -810,6 +814,7 @@ export class MaibaoApi implements INodeType {
 				description: '从 Binary 中读取音频文件的属性名（逗号分隔，自动检测第一个匹配项）',
 			},
 			...audioProperties(ACTIVE_AUDIO_BACKEND),
+			...videoUnderstandingProperties,
 		],
 		usableAsTool: true,
 	};
@@ -1220,6 +1225,12 @@ export class MaibaoApi implements INodeType {
 						? await transcribeWhisper(this, audioData, rawBaseUrl, credentials.apiKey as string, language, responseFormat)
 						: { text: await transcribeOmni(this, audioData.buffer, rawBaseUrl, credentials.apiKey as string) };
 					pushExecutionData(returnData, i, { json: result });
+				}
+
+				else if (mode === 'videoUnderstanding') {
+					const videoUrl = this.getNodeParameter('videoUnderstandingUrl', i) as string;
+					const text = await understandVideo(this, videoUrl, rawBaseUrl, credentials.apiKey as string);
+					pushExecutionData(returnData, i, { json: { text } });
 				}
 
 				else if (mode === 'embeddings') {
